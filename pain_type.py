@@ -3,8 +3,8 @@ import sys
 from multiprocessing.synchronize import Event as EventClass
 
 from loguru import logger
-from PyQt6.QtCore import QRunnable
-from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QVBoxLayout, QWidget
+from PyQt6.QtCore import QRunnable, Qt
+from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QWidget
 
 
 class PainType:
@@ -32,56 +32,62 @@ class PainTypeGUI(QWidget):
     # ---------- UI ----------
     def init_ui(self):
         self.setWindowTitle("Pain Type Selector")
+        self.setFixedSize(400, 250)  # Similar size to the base GUI
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        self.__init_header()
+        self.__init_content()
+        self.__init_footer()
 
-        self.__init_header(layout)
-        self.__init_content(layout)
-        self.__init_footer(layout)
+    def __init_header(self) -> None:
+        self.label = QLabel("Pain Type Selector", self)
+        self.label.setStyleSheet("font-size: 18pt; font-weight: bold;")
+        self.label.setGeometry(10, 10, 380, 30)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        self.label.setOpenExternalLinks(True)
+        self.label.setTextFormat(Qt.TextFormat.MarkdownText)
 
-    def __init_header(self, layout: QVBoxLayout) -> None:
-        title_label = QLabel("Select the type of pain")
-        title_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
-        layout.addWidget(title_label)
-
-    def __init_content(self, layout: QVBoxLayout) -> None:
-        self.radio_continuous = QRadioButton("Continuous Pain")
-        self.radio_palpation = QRadioButton("Pain on Palpation")
+    def __init_content(self) -> None:
+        self.radio_continuous = QRadioButton("Continuous Pain", self)
+        self.radio_continuous.setGeometry(20, 60, 200, 30)
         self.radio_continuous.setChecked(True)
 
-        # Remove underline on hover
+        self.radio_palpation = QRadioButton("Pain on Palpation", self)
+        self.radio_palpation.setGeometry(20, 100, 200, 30)
+
         style = """
-		QRadioButton {
-			text-decoration: none;
-			color: black;
-		}
-		QRadioButton:hover {
-			text-decoration: none;
-			color: black;
-			background: transparent;
-		}
-		QRadioButton::indicator {
-			width: 16px;
-			height: 16px;
-		}
-		"""
+        QRadioButton {
+            color: black;
+            border: none;
+            background: none;
+            text-decoration: none;
+        }
+        QRadioButton:hover {
+            color: black;
+            background: none;
+        }
+        QRadioButton::indicator {
+            width: 16px;
+            height: 16px;
+        }
+        """
+
         self.radio_continuous.setStyleSheet(style)
         self.radio_palpation.setStyleSheet(style)
 
-        layout.addWidget(self.radio_continuous)
-        layout.addWidget(self.radio_palpation)
-
-    def __init_footer(self, layout: QVBoxLayout) -> None:
-        ok_button = QPushButton("OK")
-        ok_button.clicked.connect(self.on_ok_clicked)
-        layout.addWidget(ok_button)
+    def __init_footer(self) -> None:
+        self.ok_button = QPushButton("OK", self)
+        self.ok_button.setGeometry(20, 150, 100, 30)
+        self.ok_button.setStyleSheet("background-color: green; color: white;")
+        self.ok_button.clicked.connect(self.on_ok_clicked)
 
     def on_ok_clicked(self):
         if self.radio_continuous.isChecked():
             self.choice = "Continuous Pain"
         else:
             self.choice = "Pain on Palpation"
+        print(f"User selected: {self.choice}")
 
 
 class PainTypeLogic(QRunnable):
@@ -105,7 +111,7 @@ class PainTypeLogic(QRunnable):
 
 
 if __name__ == "__main__":
-    mp.set_start_method("spawn")  # Important for multiprocessing on some platforms
+    mp.set_start_method("spawn")
     app = QApplication(sys.argv)
     pain_type = PainType()
     sys.exit(app.exec())
