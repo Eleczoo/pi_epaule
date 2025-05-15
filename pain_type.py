@@ -4,7 +4,7 @@ from multiprocessing.synchronize import Event as EventClass
 
 from loguru import logger
 from PyQt6.QtCore import QRunnable, Qt
-from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QRadioButton, QWidget
+from PyQt6.QtWidgets import QApplication, QButtonGroup, QHBoxLayout, QLabel, QPushButton, QRadioButton, QVBoxLayout, QWidget
 
 
 class PainType:
@@ -17,9 +17,6 @@ class PainType:
         self.gui: PainTypeGUI = PainTypeGUI()
         self.logic: PainTypeLogic = PainTypeLogic(self, worker_frequency=30)
 
-        self.gui.init_ui()
-        self.gui.show()
-
 
 class PainTypeGUI(QWidget):
     """
@@ -28,33 +25,32 @@ class PainTypeGUI(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setContentsMargins(30, 30, 30, 30)
+        self.init_ui()
 
     # ---------- UI ----------
     def init_ui(self):
-        self.setWindowTitle("Pain Type Selector")
-        self.setFixedSize(400, 250)  # Similar size to the base GUI
-
         self.__init_header()
         self.__init_content()
         self.__init_footer()
+        self.setLayout(self.main_layout)
 
     def __init_header(self) -> None:
-        self.label = QLabel("Pain Type Selector", self)
-        self.label.setStyleSheet("font-size: 18pt; font-weight: bold;")
-        self.label.setGeometry(10, 10, 380, 30)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setWordWrap(True)
-        self.label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
-        self.label.setOpenExternalLinks(True)
-        self.label.setTextFormat(Qt.TextFormat.MarkdownText)
+        self.header_label = QLabel("Pain Type", self)
+        self.header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
+        self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.main_layout.addWidget(self.header_label)
 
     def __init_content(self) -> None:
-        self.radio_continuous = QRadioButton("Continuous Pain", self)
-        self.radio_continuous.setGeometry(20, 60, 200, 30)
-        self.radio_continuous.setChecked(True)
+        # Centered radio buttons in a vertical layout
+        radio_layout = QVBoxLayout()
+        radio_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
+        self.radio_group = QButtonGroup(self)
+        self.radio_continuous = QRadioButton("Continuous Pain", self)
+        self.radio_continuous.setChecked(True)
         self.radio_palpation = QRadioButton("Pain on Palpation", self)
-        self.radio_palpation.setGeometry(20, 100, 200, 30)
 
         style = """
         QRadioButton {
@@ -62,25 +58,54 @@ class PainTypeGUI(QWidget):
             border: none;
             background: none;
             text-decoration: none;
+            min-width: 220px;
+            min-height: 32px;
+            font-size: 13pt;
+            padding: 8px 24px;
+            border-radius: 8px;
         }
         QRadioButton:hover {
             color: black;
-            background: none;
+            background: #e6f2e6;
         }
         QRadioButton::indicator {
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
         }
         """
 
         self.radio_continuous.setStyleSheet(style)
         self.radio_palpation.setStyleSheet(style)
 
-    def __init_footer(self) -> None:
+        self.radio_group.addButton(self.radio_continuous)
+        self.radio_group.addButton(self.radio_palpation)
+
+        # Add stretch before and after to center vertically
+        radio_layout.addStretch(1)
+        radio_center_layout = QHBoxLayout()
+        radio_center_layout.addStretch(1)
+        radio_center_layout.addWidget(self.radio_continuous)
+        radio_center_layout.addStretch(1)
+        radio_layout.addLayout(radio_center_layout)
+
+        radio_center_layout2 = QHBoxLayout()
+        radio_center_layout2.addStretch(1)
+        radio_center_layout2.addWidget(self.radio_palpation)
+        radio_center_layout2.addStretch(1)
+        radio_layout.addLayout(radio_center_layout2)
+        radio_layout.addStretch(1)
+
+        self.main_layout.addLayout(radio_layout, stretch=1)
+
+        # Add OK button
         self.ok_button = QPushButton("OK", self)
-        self.ok_button.setGeometry(20, 150, 100, 30)
         self.ok_button.setStyleSheet("background-color: green; color: white;")
         self.ok_button.clicked.connect(self.on_ok_clicked)
+
+        self.main_layout.addWidget(self.ok_button)
+
+    def __init_footer(self) -> None:
+        pass
 
     def on_ok_clicked(self):
         if self.radio_continuous.isChecked():

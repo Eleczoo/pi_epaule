@@ -16,7 +16,11 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from other_pain import OtherPain
+from pain_intensity import PainIntensity
+from pain_localization import PainLocalization
 from pain_type import PainType
+from palpation import Palpation
 from patient_identification import PatientIdentification
 
 # ! ---------- Logger ----------
@@ -60,6 +64,10 @@ class MainApp(QMainWindow):
 
         self.patient_identification: PatientIdentification = PatientIdentification()
         self.pain_type: PainType = PainType()
+        self.pain_localization: PainLocalization = PainLocalization()
+        self.palpation: Palpation = Palpation()
+        self.pain_intensity: PainIntensity = PainIntensity()
+        self.other_pain: OtherPain = OtherPain()
 
         # ! Init the worker thread
         self.threadpool = QtCore.QThreadPool()
@@ -90,8 +98,20 @@ class MainApp(QMainWindow):
         # ! First tab :Patient Identification
         tab_widget.addTab(self.patient_identification.gui, "Patient identification")
 
-        # ! Second tab : Other
+        # ! Second tab : Pain type
         tab_widget.addTab(self.pain_type.gui, "Pain type")
+
+        # ! Third tab : Pain localization
+        tab_widget.addTab(self.pain_localization.gui, "Pain localization")
+
+        # ! Palpation
+        tab_widget.addTab(self.palpation.gui, "Palpation")
+
+        # ! Pain intensity
+        tab_widget.addTab(self.pain_intensity.gui, "Pain intensity")
+
+        # ! Pain intensity
+        tab_widget.addTab(self.other_pain.gui, "Other pain")
 
         # ! --- simple label
         header_layout = QHBoxLayout()

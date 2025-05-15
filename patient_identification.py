@@ -3,7 +3,7 @@ from multiprocessing.synchronize import Event as EventClass
 
 from loguru import logger
 from PyQt6.QtCore import QRunnable, Qt
-from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton, QWidget
+from PyQt6.QtWidgets import QFormLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
 
 
 class PatientIdentification:
@@ -16,8 +16,6 @@ class PatientIdentification:
         self.gui: PatientIdentificationGUI = PatientIdentificationGUI()
         self.logic: PatientIdentificationLogic = PatientIdentificationLogic(self, worker_frequency=30)
 
-        self.gui.init_ui()
-
 
 class PatientIdentificationGUI(QWidget):
     """
@@ -26,6 +24,10 @@ class PatientIdentificationGUI(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setContentsMargins(100, 30, 100, 30)
+        self.setLayout(self.main_layout)
+
         self.init_ui()
 
     # ! ---------- UI ----------
@@ -35,38 +37,50 @@ class PatientIdentificationGUI(QWidget):
         self.__init_footer()
 
     def __init_header(self) -> None:
-        self.label = QLabel("Patient Identification", self)
-        self.label.setStyleSheet("font-size: 18pt; font-weight: bold;")
-        self.label.setGeometry(10, 10, 300, 30)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setWordWrap(True)
-        self.label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
-        self.label.setOpenExternalLinks(True)
-        self.label.setTextFormat(Qt.TextFormat.MarkdownText)
+        self.header_label = QLabel("Patient identification", self)
+        self.header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
+        self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.main_layout.addWidget(self.header_label)
 
     def __init_content(self) -> None:
-        self.name_label = QLabel("Nom:", self)
-        self.name_label.setGeometry(10, 50, 100, 30)
+        center_layout = QVBoxLayout()
+
+        form_layout = QFormLayout()
+        form_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+
+        center_layout.addStretch(1)
+
         self.name_input = QLineEdit(self)
-        self.name_input.setGeometry(120, 50, 200, 30)
-        self.name_input.setStyleSheet("border: 1px solid black;")
+        self.name_input.setMinimumHeight(40)
+        self.name_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
+        form_layout.addRow("Name", self.name_input)
 
-        self.firstname_label = QLabel("Prénom:", self)
-        self.firstname_label.setGeometry(10, 90, 100, 30)
         self.firstname_input = QLineEdit(self)
-        self.firstname_input.setGeometry(120, 90, 200, 30)
-        self.firstname_input.setStyleSheet("border: 1px solid black;")
+        self.firstname_input.setMinimumHeight(40)
+        self.firstname_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
+        form_layout.addRow("First name", self.firstname_input)
 
-        self.date_naissance_label = QLabel("Date de naissance:", self)
-        self.date_naissance_label.setGeometry(10, 130, 150, 30)
         self.date_naissance_input = QLineEdit(self)
-        self.date_naissance_input.setGeometry(170, 130, 150, 30)
-        self.date_naissance_input.setStyleSheet("border: 1px solid black;")
+        self.date_naissance_input.setMinimumHeight(40)
+        self.date_naissance_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
+        self.date_naissance_input.setPlaceholderText("DD/MM/YYYY")
+        self.date_naissance_input.setMaxLength(10)
+        self.date_naissance_input.setInputMask("99/99/9999")
+        self.date_naissance_input.setText("01/01/2000")
+        form_layout.addRow("Date of birth", self.date_naissance_input)
+
+        center_layout.addLayout(form_layout, stretch=1)
+
+        self.main_layout.addLayout(center_layout)
+        self.main_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
         self.ok_button = QPushButton("OK", self)
-        self.ok_button.setGeometry(10, 170, 100, 30)
         self.ok_button.setStyleSheet("background-color: green; color: white;")
         self.ok_button.clicked.connect(self.on_ok_clicked)
+
+        self.main_layout.addWidget(self.ok_button)
+
+        self.setLayout(self.main_layout)
 
     def on_ok_clicked(self) -> None:
         print("OK button clicked")
