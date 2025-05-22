@@ -5,7 +5,7 @@ import cv2
 from loguru import logger
 from PyQt6.QtCore import QObject, QRunnable, Qt, pyqtSignal
 from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 
 class PainLocalization:
@@ -43,6 +43,15 @@ class PainLocalizationGUI(QWidget):
         self.__init_footer()
         self.setLayout(self.main_layout)
 
+    def resizeEvent(self, a0):
+        """
+        Resize event to update the size of the capture
+        :param a0: QResizeEvent
+        """
+        super().resizeEvent(a0)
+        size = (self.flux_cam_label.width(), self.flux_cam_label.height())
+        self.pain_localization.logic.set_size_capture(size)
+
     def __init_header(self):
         header_label = QLabel("Pain Localization", self)
         header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
@@ -63,6 +72,8 @@ class PainLocalizationGUI(QWidget):
         self.flux_cam_label = QLabel("Video feed", self)
         self.flux_cam_label.setStyleSheet("background-color: #888; border-radius: 5px; color: white; font-weight: normal;")
         self.flux_cam_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.flux_cam_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+
         self.pain_localization.logic.signals.change_pixmap_signal.connect(self.update_image)
 
         # 3D avatar placeholder
@@ -128,6 +139,15 @@ class PainLocalizationLogic(QRunnable):
         self.video_source = video_source
         self.stopped: EventClass = mp.Event()
 
+        self.size_capture: tuple[int, int] = (640, 480)
+
+    def set_size_capture(self, size: tuple[int, int]):
+        """
+        Set the size of the capture
+        :param size: tuple of (width, height)
+        """
+        self.size_capture = size
+
     def run(self):
         self.cap = cv2.VideoCapture(self.video_source)
         while not self.stopped.wait(timeout=self.worker_period):
@@ -139,7 +159,8 @@ class PainLocalizationLogic(QRunnable):
             h, w, ch = rgb_image.shape
             bytes_per_line = ch * w
             qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
-            scaled_img = qt_image.scaled(320, 240, Qt.AspectRatioMode.KeepAspectRatio)
+            scaled_img = qt_image.scaled(self.size_capture[0], self.size_capture[1], Qt.AspectRatioMode.KeepAspectRatio)
+            # scaled_img = qt_image.scaled(self.size_capture[0], self.size_capture[1])
             self.signals.change_pixmap_signal.emit(scaled_img)
 
     def stop(self):
