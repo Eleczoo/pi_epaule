@@ -70,7 +70,8 @@ class PainLocalizationGUI(QWidget):
 
         # Flux cam placeholder
         self.flux_cam_label = QLabel("Video feed", self)
-        self.flux_cam_label.setStyleSheet("background-color: #888; border-radius: 5px; color: white; font-weight: normal;")
+        # self.flux_cam_label.setStyleSheet("background-color: #FFFFFF; border-radius: 5px; color: white; font-weight: normal;")
+        self.flux_cam_label.setStyleSheet("border-radius: 5px; color: white; font-weight: normal;")
         self.flux_cam_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.flux_cam_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
