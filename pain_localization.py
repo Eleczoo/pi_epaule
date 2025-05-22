@@ -1,8 +1,10 @@
 import multiprocessing as mp
 from multiprocessing.synchronize import Event as EventClass
 
+import cv2
 from loguru import logger
-from PyQt6.QtCore import QRunnable, Qt
+from PyQt6.QtCore import QObject, QRunnable, Qt, pyqtSignal
+from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 
@@ -13,8 +15,12 @@ class PainLocalization:
 
     def __init__(self):
         logger.info("Initializing PainLocalization")
-        self.gui: PainLocalizationGUI = PainLocalizationGUI()
-        self.logic: PainLocalizationLogic = PainLocalizationLogic(self, worker_frequency=30)
+        self.logic: PainLocalizationLogic = PainLocalizationLogic(
+            self,
+            worker_frequency=30,
+            video_source="video.mp4",
+        )
+        self.gui: PainLocalizationGUI = PainLocalizationGUI(parent=self)
 
 
 class PainLocalizationGUI(QWidget):
@@ -22,11 +28,12 @@ class PainLocalizationGUI(QWidget):
     This class contains the GUI part for the PainLocalization
     """
 
-    def __init__(self):
+    def __init__(self, parent: PainLocalization):
         super().__init__()
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.main_layout.setSpacing(20)
+        self.pain_localization: PainLocalization = parent
 
         self.init_ui()
 
@@ -56,6 +63,7 @@ class PainLocalizationGUI(QWidget):
         self.flux_cam_label = QLabel("Video feed", self)
         self.flux_cam_label.setStyleSheet("background-color: #888; border-radius: 5px; color: white; font-weight: normal;")
         self.flux_cam_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pain_localization.logic.signals.change_pixmap_signal.connect(self.update_image)
 
         # 3D avatar placeholder
         self.avatar_placeholder = QFrame(self)
@@ -82,6 +90,13 @@ class PainLocalizationGUI(QWidget):
         self.main_layout.addLayout(content_layout, stretch=1)
         self.main_layout.addLayout(buttons_layout)
 
+    def update_image(self, image: QImage):
+        """
+        Updates the image in the label
+        :param image: QImage to be displayed
+        """
+        self.flux_cam_label.setPixmap(QPixmap.fromImage(image))
+
     def on_ok_clicked(self):
         print("Pain localization confirmed.")
 
@@ -89,21 +104,48 @@ class PainLocalizationGUI(QWidget):
         pass
 
 
+class PainLocalizationSignals(QObject):
+    """
+    Signals to communicate with the worker thread
+    """
+
+    change_pixmap_signal = pyqtSignal(QImage)
+
+
 class PainLocalizationLogic(QRunnable):
     """
     Logic class for PainLocalization
     """
 
-    def __init__(self, parent: PainLocalization, worker_frequency: int):
+    change_pixmap_signal = pyqtSignal(QImage)
+
+    def __init__(self, parent: PainLocalization, worker_frequency: int, video_source: str):
         super().__init__()
         self.parent = parent
+        self.signals = PainLocalizationSignals()
         self.worker_frequency = worker_frequency
         self.worker_period = 1 / worker_frequency
+        self.video_source = video_source
         self.stopped: EventClass = mp.Event()
 
     def run(self):
+        self.cap = cv2.VideoCapture(self.video_source)
         while not self.stopped.wait(timeout=self.worker_period):
-            logger.debug("Running PainLocalization logic.")
+            ret, frame = self.cap.read()
+            if not ret:
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                continue
+            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = rgb_image.shape
+            bytes_per_line = ch * w
+            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+            scaled_img = qt_image.scaled(320, 240, Qt.AspectRatioMode.KeepAspectRatio)
+            self.signals.change_pixmap_signal.emit(scaled_img)
 
     def stop(self):
         self.stopped.set()
+        self.cap.release()
+
+    #         cam.release()
+    # out.release()
+    # cv2.destroyAllWindows()

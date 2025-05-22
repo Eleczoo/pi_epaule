@@ -6,5 +6,9 @@ dist/
 wheels/
 *.egg-info
 
+# Temp files
+**/*video.mp4
+video_capture.py
+
 # Virtual environments
 .venv
