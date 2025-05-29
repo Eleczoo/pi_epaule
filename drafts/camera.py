@@ -12,7 +12,7 @@ from loguru import logger
 
 # ! MODELS
 PATH_MODELS = "models"
-YOLO_KEYPOINT_MODEL  = YOLO(f"{PATH_MODELS}/yolo11n-pose.pt")
+YOLO_KEYPOINT_MODEL = YOLO(f"{PATH_MODELS}/yolo11n-pose.pt")
 YOLO_SEGMENTATION_MODEL = YOLO(f"{PATH_MODELS}/best.pt")
 
 # ! ASSETS
@@ -22,6 +22,7 @@ PATH_IMAGE_AVATAR = f"{PATH_ASSETS}/avatar.png"
 
 
 # --- Async Video Capture Class ---
+
 
 class VideoCaptureAsync:
     def __init__(self, src=0):
@@ -65,66 +66,62 @@ class VideoCaptureAsync:
         self.cap.release()
 
 
-
-
-
-
 def send_pick_request(x, y):
-    pick_url  = "http://lifesciencedb.jp/bp3d/API/pick"
-    pick_payload  = {
+    pick_url = "http://lifesciencedb.jp/bp3d/API/pick"
+    pick_payload = {
         "Part": [
-            {"PartName":"humerus","PartColor":"0000FF","PartOpacity":0.7},
-            {"PartName":"scapula","PartColor":"0000FF","PartOpacity":0.7},
-            {"PartName":"clavicle","PartColor":"0000FF","PartOpacity":0.7},
-            {"PartName":"supraspinatus","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"brachial plexus","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"axillary nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"musculocutaneous nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"dorsal scapular nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"long thoracic nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"suprascapular nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"nerve to subclavius","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"lateral pectoral nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"medial pectoral nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"upper subscapular nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"lower subscapular nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"thoracodorsal nerve","PartColor":"FF0000","PartOpacity":0.7},
-            {"PartName":"pectoralis minor","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"rhomboid major","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"rhomboid minor","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"levator scapulae","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"serratus anterior","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"subscapularis","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"infraspinatus","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"teres minor","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"teres major","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"deltoid","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"biceps brachii","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"coracobrachialis","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"trapezius","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"latissimus dorsi","PartColor":"FFFF00","PartOpacity":0.7},
-            {"PartName":"tendon of long head of biceps brachii","PartColor":"D2B48C","PartOpacity":0.7},
-            {"PartName":"tendon of long head of triceps brachii","PartColor":"D2B48C","PartOpacity":0.7},
-            {"PartName":"axillary fascia","PartColor":"00FF00","PartOpacity":0.7},
-            {"PartName":"pectoral fascia","PartColor":"00FF00","PartOpacity":0.7},
-            {"PartName":"deltoid fascia","PartColor":"00FF00","PartOpacity":0.7},
-            {"PartName":"infraspinous fascia","PartColor":"00FF00","PartOpacity":0.7},
-            {"PartName":"supraspinous fascia","PartColor":"00FF00","PartOpacity":0.7},
-            {"PartName":"subscapular fascia","PartColor":"00FF00","PartOpacity":0.7},
-            {"PartName":"glenohumeral ligaments","PartColor":"A9A9A9","PartOpacity":0.7},
-            {"PartName":"coracohumeral ligament","PartColor":"A9A9A9","PartOpacity":0.7},
-            {"PartName":"transverse humeral ligament","PartColor":"A9A9A9","PartOpacity":0.7},
-            {"PartName":"coracoacromial ligament","PartColor":"A9A9A9","PartOpacity":0.7},
-            {"PartName":"acromioclavicular ligament","PartColor":"A9A9A9","PartOpacity":0.7},
-            {"PartName":"costoclavicular ligament","PartColor":"A9A9A9","PartOpacity":0.7},
-            {"PartName":"glenoid labrum","PartColor":"808080","PartOpacity":0.7}
+            {"PartName": "humerus", "PartColor": "0000FF", "PartOpacity": 0.7},
+            {"PartName": "scapula", "PartColor": "0000FF", "PartOpacity": 0.7},
+            {"PartName": "clavicle", "PartColor": "0000FF", "PartOpacity": 0.7},
+            {"PartName": "supraspinatus", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "brachial plexus", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "axillary nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "musculocutaneous nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "dorsal scapular nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "long thoracic nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "suprascapular nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "nerve to subclavius", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "lateral pectoral nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "medial pectoral nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "upper subscapular nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "lower subscapular nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "thoracodorsal nerve", "PartColor": "FF0000", "PartOpacity": 0.7},
+            {"PartName": "pectoralis minor", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "rhomboid major", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "rhomboid minor", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "levator scapulae", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "serratus anterior", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "subscapularis", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "infraspinatus", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "teres minor", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "teres major", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "deltoid", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "biceps brachii", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "coracobrachialis", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "trapezius", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "latissimus dorsi", "PartColor": "FFFF00", "PartOpacity": 0.7},
+            {"PartName": "tendon of long head of biceps brachii", "PartColor": "D2B48C", "PartOpacity": 0.7},
+            {"PartName": "tendon of long head of triceps brachii", "PartColor": "D2B48C", "PartOpacity": 0.7},
+            {"PartName": "axillary fascia", "PartColor": "00FF00", "PartOpacity": 0.7},
+            {"PartName": "pectoral fascia", "PartColor": "00FF00", "PartOpacity": 0.7},
+            {"PartName": "deltoid fascia", "PartColor": "00FF00", "PartOpacity": 0.7},
+            {"PartName": "infraspinous fascia", "PartColor": "00FF00", "PartOpacity": 0.7},
+            {"PartName": "supraspinous fascia", "PartColor": "00FF00", "PartOpacity": 0.7},
+            {"PartName": "subscapular fascia", "PartColor": "00FF00", "PartOpacity": 0.7},
+            {"PartName": "glenohumeral ligaments", "PartColor": "A9A9A9", "PartOpacity": 0.7},
+            {"PartName": "coracohumeral ligament", "PartColor": "A9A9A9", "PartOpacity": 0.7},
+            {"PartName": "transverse humeral ligament", "PartColor": "A9A9A9", "PartOpacity": 0.7},
+            {"PartName": "coracoacromial ligament", "PartColor": "A9A9A9", "PartOpacity": 0.7},
+            {"PartName": "acromioclavicular ligament", "PartColor": "A9A9A9", "PartOpacity": 0.7},
+            {"PartName": "costoclavicular ligament", "PartColor": "A9A9A9", "PartOpacity": 0.7},
+            {"PartName": "glenoid labrum", "PartColor": "808080", "PartOpacity": 0.7},
         ],
         "Window": {"ImageWidth": 500, "ImageHeight": 500},
-        "Pick": {"ScreenPosX": x, "ScreenPosY": y}
+        "Pick": {"ScreenPosX": x, "ScreenPosY": y},
     }
     logger.debug("send pick request")
-    logger.debug("📤 Pick Request Payload:", json.dumps(pick_payload, separators=(',', ':')))
-    pick_response = requests.post(pick_url, data=json.dumps(pick_payload), headers={'Content-Type': 'application/json'})
+    logger.debug("📤 Pick Request Payload:", json.dumps(pick_payload, separators=(",", ":")))
+    pick_response = requests.post(pick_url, data=json.dumps(pick_payload), headers={"Content-Type": "application/json"})
     if pick_response.status_code != 200:
         logger.error("❌ Pick request failed with status:", pick_response.status_code)
         logger.error("Response text:", pick_response.text)
@@ -142,26 +139,20 @@ def send_pick_request(x, y):
     result = pick_response.json()
     part_names = list({pin["PinPartName"] for pin in result.get("Pin", [])})
 
-    image_url = 'http://lifesciencedb.jp/bp3d/API/image'
+    image_url = "http://lifesciencedb.jp/bp3d/API/image"
     image_payload = {
         "Part": [{"PartName": "anatomical entity", "PartColor": "F0D2A0", "PartOpacity": 0.1}],
-        "Window": {"ImageWidth": 500, "ImageHeight": 500}
+        "Window": {"ImageWidth": 500, "ImageHeight": 500},
     }
     for name in part_names:
-        image_payload["Part"].append({
-            "PartName": name,
-            "PartColor": ''.join([random.choice('0123456789ABCDEF') for _ in range(6)]),
-            "PartOpacity": 0.7
-        })
+        image_payload["Part"].append(
+            {"PartName": name, "PartColor": "".join([random.choice("0123456789ABCDEF") for _ in range(6)]), "PartOpacity": 0.7}
+        )
 
     print("image response ")
     print("URL:", image_url)
-    print("📤 Pick Request Payload:", json.dumps(image_payload, separators=(',', ':')))
-    image_response = requests.post(
-        image_url,
-        data=json.dumps(image_payload),
-        headers={'Content-Type': 'application/json'}
-    )
+    print("📤 Pick Request Payload:", json.dumps(image_payload, separators=(",", ":")))
+    image_response = requests.post(image_url, data=json.dumps(image_payload), headers={"Content-Type": "application/json"})
 
     logger.debug("Image response status code:", image_response.status_code)
     logger.debug("Image response headers:", image_response.headers)
@@ -182,12 +173,10 @@ def send_pick_request(x, y):
         logger.error("Image request failed with status:", image_response.status_code)
 
 
-
-
 class_names = {0: "background", 1: "manche", 2: "dispositif"}
 
 # --- Start async video capture ---
-#cam = VideoCaptureAsync(0).start()
+# cam = VideoCaptureAsync(0).start()
 
 cam = cv2.VideoCapture(PATH_VIDEO_QUENTIN)
 image_avatar = cv2.imread(PATH_IMAGE_AVATAR)
@@ -198,7 +187,7 @@ while True:
     if not ret:
         cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
         continue
-    
+
     # Resize frame to fit within 1000x1000 while keeping aspect ratio
     h, w = frame.shape[:2]
     scale = min(1000 / w, 1000 / h)
@@ -240,28 +229,45 @@ while True:
                 cls_id = int(classes[i].item())
                 if cls_id == 2:  # Assuming class 2 is your "device"
                     mask_np = mask.cpu().numpy().astype(np.uint8)
+
                     ys, xs = np.where(mask_np > 0)
+
+                    # Show the mask in full RED drawn in the frame
+                    mask_resized = cv2.resize(mask_np, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_NEAREST)
+                    red_mask = np.zeros_like(frame)
+                    red_mask[mask_resized > 0] = [0, 0, 255]  # BGR: Red
+                    frame = cv2.addWeighted(frame, 1.0, red_mask, 0.5, 0)
+
                     if len(xs) == 0:
                         continue
+                    # median_x = np.median(xs)
+                    # median_y = np.median(ys)
+                    # Compute median in mask coordinates
                     median_x = np.median(xs)
                     median_y = np.median(ys)
-                    last_device_location = (median_x, median_y)
-                    device_x, device_y = last_device_location
-                    avg_shoulder_y = (left_shoulder[1] + right_shoulder[1]) / 2
-                    y_on_static_img = int(100 + (device_y - avg_shoulder_y))
-                    min_x = min(left_shoulder[0], right_shoulder[0])
-                    max_x = max(left_shoulder[0], right_shoulder[0])
-                    percent = ((device_x - min_x) / (max_x - min_x + 1e-6)) * 100
-                    static_x_start = 100
-                    static_x_end = 377
-                    x_on_static_img = int(static_x_start + (percent / 100) * (static_x_end - static_x_start))
-                    print(x_on_static_img, y_on_static_img)
-                    cv2.circle(output_img, (x_on_static_img, y_on_static_img), 30, (255, 0, 0), -1)
+                    # Resize to frame coordinates
+                    mask_h, mask_w = mask_np.shape
+                    frame_h, frame_w = frame.shape[:2]
+                    median_x = int(median_x * frame_w / mask_w)
+                    median_y = int(median_y * frame_h / mask_h)
+
+                    # last_device_location = (median_x, median_y)
+                    # device_x, device_y = last_device_location
+                    # avg_shoulder_y = (left_shoulder[1] + right_shoulder[1]) / 2
+                    # y_on_static_img = int(100 + (device_y - avg_shoulder_y))
+                    # min_x = min(left_shoulder[0], right_shoulder[0])
+                    # max_x = max(left_shoulder[0], right_shoulder[0])
+                    # percent = ((device_x - min_x) / (max_x - min_x + 1e-6)) * 100
+                    # static_x_start = 100
+                    # static_x_end = 377
+                    # x_on_static_img = int(static_x_start + (percent / 100) * (static_x_end - static_x_start))
+                    # print(x_on_static_img, y_on_static_img)
+                    # cv2.circle(output_img, (x_on_static_img, y_on_static_img), 30, (255, 0, 0), -1)
                     cv2.circle(frame, (int(median_x), int(median_y)), 10, (255, 0, 0), -1)
 
     # === Handle 'p' key to print positions ===
     key = cv2.waitKey(1) & 0xFF
-    if key == ord('p'):
+    if key == ord("p"):
         if left_shoulder is not None and right_shoulder is not None:
             print(f"Left shoulder: ({left_shoulder[0]:.1f}, {left_shoulder[1]:.1f})")
             print(f"Right shoulder: ({right_shoulder[0]:.1f}, {right_shoulder[1]:.1f})")
@@ -276,7 +282,7 @@ while True:
                 static_x_end = 377
                 x_on_static_img = int(static_x_start + (percent / 100) * (static_x_end - static_x_start))
 
-                send_pick_request(x_on_static_img,y_on_static_img)
+                send_pick_request(x_on_static_img, y_on_static_img)
         else:
             print("Shoulders not detected.")
 

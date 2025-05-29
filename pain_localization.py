@@ -8,6 +8,19 @@ from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 from ultralytics import YOLO
 import numpy as np
+import threading
+import sys
+
+
+# Set the logger as enqueue
+logger.remove()
+logger.add(
+    sys.stderr,
+    level="DEBUG",
+    colorize=True,
+    enqueue=True,
+    backtrace=True,
+)
 
 
 class PainLocalization:
@@ -20,7 +33,7 @@ class PainLocalization:
         self.logic: PainLocalizationLogic = PainLocalizationLogic(
             self,
             worker_frequency=30,
-            video_source="assets/dispositif_quentin.mp4",
+            video_source="assets/dispositif_quentin_down.mp4",
         )
         self.gui: PainLocalizationGUI = PainLocalizationGUI(parent=self)
 
@@ -124,14 +137,13 @@ class PainLocalizationSignals(QObject):
     """
 
     change_pixmap_signal = pyqtSignal(QImage)
+    start_new_computation_pos = pyqtSignal()
 
 
 class PainLocalizationLogic(QRunnable):
     """
     Logic class for PainLocalization
     """
-
-    change_pixmap_signal = pyqtSignal(QImage)
 
     def __init__(self, parent: PainLocalization, worker_frequency: int, video_source: str):
         super().__init__()
@@ -142,12 +154,26 @@ class PainLocalizationLogic(QRunnable):
         self.video_source = video_source
         self.stopped: EventClass = mp.Event()
 
+        self.frame: cv2.Mat = None
         self.size_capture: tuple[int, int] = (640, 480)
 
         # ! MODELS
         PATH_MODELS = "models"
-        self.yolo_keypoint_model  = YOLO(f"{PATH_MODELS}/yolo11n-pose.pt")
+        self.yolo_keypoint_model = YOLO(f"{PATH_MODELS}/yolo11n-pose.pt")
         self.yolo_segmentation_model = YOLO(f"{PATH_MODELS}/best.pt")
+
+        # ! Live position of the shoulders and marker
+        # ! Used to show on the image
+        self.count_frames: int = 0
+        self.left_shoulder_coord: tuple[int, int] = (0, 0)
+        self.right_shoulder_coord: tuple[int, int] = (0, 0)
+        self.marker_coord: tuple[int, int] = (0, 0)
+
+        self.compute_thread: threading.Thread = threading.Thread(
+            target=self.routine_compute_new_positions,
+            daemon=True,
+        )
+        self.compute_thread.start()
 
     def set_size_capture(self, size: tuple[int, int]):
         """
@@ -158,36 +184,37 @@ class PainLocalizationLogic(QRunnable):
 
     def run(self):
         self.cap = cv2.VideoCapture(self.video_source)
+        self.count_frames = 0
+
         while not self.stopped.wait(timeout=self.worker_period):
             ret, frame = self.cap.read()
             if not ret:
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 continue
 
-            result_shoulder = self.detect_and_draw_shoulders(frame)
-            drawned_image = result_shoulder[0]
+            self.frame = frame.copy()
+            self.count_frames += 1
 
-            if drawned_image is None:
-                logger.warning("No shoulders detected, skipping frame.")
-                continue
+            # ! Draw shoulders and marker on the frame
+            cv2.circle(frame, self.left_shoulder_coord, 15, (0, 0, 255), -1)  # Draw left shoulder
+            cv2.circle(frame, self.right_shoulder_coord, 15, (0, 0, 255), -1)  # Draw right shoulder
+            cv2.circle(frame, self.marker_coord, 10, (255, 0, 0), -1)  # Draw marker
 
             # ? Rescale and Convert the drawned image to QImage
-            height, width, channel = drawned_image.shape
+            height, width, channel = frame.shape
             bytes_per_line = channel * width
-            drawned_image = cv2.cvtColor(drawned_image, cv2.COLOR_BGR2RGB)
-            drawned_image = QImage(drawned_image.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
-            scaled_img = drawned_image.scaled(self.size_capture[0], self.size_capture[1], Qt.AspectRatioMode.KeepAspectRatio)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
+            scaled_img = frame.scaled(self.size_capture[0], self.size_capture[1], Qt.AspectRatioMode.KeepAspectRatio)
+
             self.signals.change_pixmap_signal.emit(scaled_img)
 
-
-    def detect_and_draw_shoulders(self, raw_frame: cv2.Mat) -> tuple[cv2.Mat, np.ndarray, np.ndarray]:
+    def detect_shoulders(self, raw_frame: cv2.Mat) -> tuple[cv2.Mat, np.ndarray, np.ndarray]:
         """
         This will take the raw frame from the camera and detect the shoulders
-        with yolo model, 
+        with yolo model,
 
-        It will then draw the shoulders on the frame as circles
-        and return:
-        - The modified frame with the shoulders drawn
+        It will then return the shoulders on the frame as coordinates:
         - The left shoulder coordinates
         - The right shoulder coordinates
         """
@@ -198,10 +225,10 @@ class PainLocalizationLogic(QRunnable):
 
         if not keypoints_results:
             logger.warning("No keypoints detected.")
-            return raw_frame, None, None
+            return None, None
 
         for result in keypoints_results:
-            if hasattr(result, 'keypoints'):
+            if hasattr(result, "keypoints"):
                 keypoints = result.keypoints
 
                 if keypoints is not None and keypoints.shape[0] > 0:
@@ -210,14 +237,102 @@ class PainLocalizationLogic(QRunnable):
                     left_shoulder = keypoints_numpy[5][:2]
                     right_shoulder = keypoints_numpy[6][:2]
 
-                    cv2.circle(raw_frame, tuple(left_shoulder.astype(int)), 15, (0, 0, 255), -1)
-                    cv2.circle(raw_frame, tuple(right_shoulder.astype(int)), 15, (0, 0, 255), -1)
+                    # cv2.circle(raw_frame, tuple(left_shoulder.astype(int)), 15, (0, 0, 255), -1)
+                    # cv2.circle(raw_frame, tuple(right_shoulder.astype(int)), 15, (0, 0, 255), -1)
 
             else:
                 logger.warning("No keypoints found in the results.")
-                return raw_frame, None, None
-        
-        return raw_frame, left_shoulder, right_shoulder    
+                return None, None
+
+        return left_shoulder.astype(int), right_shoulder.astype(int)
+
+    def detect_marker(self, raw_frame: cv2.Mat, left_shoulder: np.ndarray, right_shoulder: np.ndarray) -> np.ndarray:
+        """
+        This will take the raw frame from the camera and detect the marker
+        with yolo model,
+
+        It will then return the marker on the frame as coordinates:
+        """
+        seg_results = self.yolo_segmentation_model(source=raw_frame, verbose=False)
+
+        if not seg_results:
+            logger.warning("No segmentation results found.")
+            return None
+
+        last_device_location = None
+
+        for result in seg_results:
+            masks = getattr(result, "masks", None)
+            boxes = getattr(result, "boxes", None)
+
+            if masks is not None and masks.data is not None and boxes is not None:
+                classes = boxes.cls
+                for i, mask in enumerate(masks.data):
+                    cls_id = int(classes[i].item())
+                    if cls_id == 2:  # Assuming class 2 is your "device"
+                        mask_np = mask.cpu().numpy().astype(np.uint8)
+                        ys, xs = np.where(mask_np > 0)
+                        if len(xs) == 0:
+                            continue
+
+                        median_x = np.median(xs)
+                        median_y = np.median(ys)
+
+                        # ? Weird reshape, idk why
+                        mask_h, mask_w = mask_np.shape
+                        frame_h, frame_w = raw_frame.shape[:2]
+                        median_x = int(median_x * frame_w / mask_w)
+                        median_y = int(median_y * frame_h / mask_h)
+
+                        last_device_location = (median_x, median_y)
+                        # device_x, device_y = last_device_location
+                        # avg_shoulder_y = (left_shoulder[1] + right_shoulder[1]) / 2
+                        # y_on_static_img = int(100 + (device_y - avg_shoulder_y))
+                        # min_x = min(left_shoulder[0], right_shoulder[0])
+                        # max_x = max(left_shoulder[0], right_shoulder[0])
+                        # percent = ((device_x - min_x) / (max_x - min_x + 1e-6)) * 100
+                        # static_x_start = 100
+                        # static_x_end = 377
+                        # x_on_static_img = int(static_x_start + (percent / 100) * (static_x_end - static_x_start))
+                        # print(x_on_static_img, y_on_static_img)
+                        # cv2.circle(raw_frame, (int(median_x), int(median_y)), 10, (255, 0, 0), -1)
+            else:
+                logger.warning("No masks or boxes found in the segmentation results.")
+                return None
+
+        if last_device_location is not None:
+            return np.array([int(last_device_location[0]), int(last_device_location[1])])
+        return None
+
+    def routine_compute_new_positions(self):
+        """
+        This routine runs in a separate thread to compute the new positions of the shoulders and marker
+        It will use the self.frame, make a copy to avoid changes
+        and compute new positions of the shoulders and marker
+
+        """
+
+        while not self.stopped.is_set():
+            if self.count_frames % 1 == 0:
+                # Get the current frame
+                if self.frame is not None:
+                    copy_frame = self.frame.copy()
+
+                    logger.debug(f"Processing frame shape {copy_frame.shape} at frame count {self.count_frames}")
+
+                    # Detect shoulders
+                    left_shoulder, right_shoulder = self.detect_shoulders(copy_frame)
+                    if left_shoulder is not None and right_shoulder is not None:
+                        self.left_shoulder_coord = tuple(left_shoulder)
+                        self.right_shoulder_coord = tuple(right_shoulder)
+
+                    # Detect marker
+                    marker_coord = self.detect_marker(copy_frame, left_shoulder, right_shoulder)
+                    if marker_coord is not None:
+                        self.marker_coord = tuple(marker_coord)
+
+            self.count_frames += 1
+
     def stop(self):
         self.stopped.set()
         self.cap.release()
