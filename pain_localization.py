@@ -6,6 +6,8 @@ from loguru import logger
 from PyQt6.QtCore import QObject, QRunnable, Qt, pyqtSignal
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
+from ultralytics import YOLO
+import numpy as np
 
 
 class PainLocalization:
@@ -18,7 +20,7 @@ class PainLocalization:
         self.logic: PainLocalizationLogic = PainLocalizationLogic(
             self,
             worker_frequency=30,
-            video_source="video.mp4",
+            video_source="assets/dispositif_quentin.mp4",
         )
         self.gui: PainLocalizationGUI = PainLocalizationGUI(parent=self)
 
@@ -142,6 +144,11 @@ class PainLocalizationLogic(QRunnable):
 
         self.size_capture: tuple[int, int] = (640, 480)
 
+        # ! MODELS
+        PATH_MODELS = "models"
+        self.yolo_keypoint_model  = YOLO(f"{PATH_MODELS}/yolo11n-pose.pt")
+        self.yolo_segmentation_model = YOLO(f"{PATH_MODELS}/best.pt")
+
     def set_size_capture(self, size: tuple[int, int]):
         """
         Set the size of the capture
@@ -156,18 +163,61 @@ class PainLocalizationLogic(QRunnable):
             if not ret:
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 continue
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            bytes_per_line = ch * w
-            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
-            scaled_img = qt_image.scaled(self.size_capture[0], self.size_capture[1], Qt.AspectRatioMode.KeepAspectRatio)
-            # scaled_img = qt_image.scaled(self.size_capture[0], self.size_capture[1])
+
+            result_shoulder = self.detect_and_draw_shoulders(frame)
+            drawned_image = result_shoulder[0]
+
+            if drawned_image is None:
+                logger.warning("No shoulders detected, skipping frame.")
+                continue
+
+            # ? Rescale and Convert the drawned image to QImage
+            height, width, channel = drawned_image.shape
+            bytes_per_line = channel * width
+            drawned_image = cv2.cvtColor(drawned_image, cv2.COLOR_BGR2RGB)
+            drawned_image = QImage(drawned_image.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
+            scaled_img = drawned_image.scaled(self.size_capture[0], self.size_capture[1], Qt.AspectRatioMode.KeepAspectRatio)
             self.signals.change_pixmap_signal.emit(scaled_img)
 
+
+    def detect_and_draw_shoulders(self, raw_frame: cv2.Mat) -> tuple[cv2.Mat, np.ndarray, np.ndarray]:
+        """
+        This will take the raw frame from the camera and detect the shoulders
+        with yolo model, 
+
+        It will then draw the shoulders on the frame as circles
+        and return:
+        - The modified frame with the shoulders drawn
+        - The left shoulder coordinates
+        - The right shoulder coordinates
+        """
+        keypoints_results = self.yolo_keypoint_model(
+            source=raw_frame,
+            verbose=False,
+        )
+
+        if not keypoints_results:
+            logger.warning("No keypoints detected.")
+            return raw_frame, None, None
+
+        for result in keypoints_results:
+            if hasattr(result, 'keypoints'):
+                keypoints = result.keypoints
+
+                if keypoints is not None and keypoints.shape[0] > 0:
+                    keypoints_numpy = keypoints.data.cpu().numpy()[0]
+
+                    left_shoulder = keypoints_numpy[5][:2]
+                    right_shoulder = keypoints_numpy[6][:2]
+
+                    cv2.circle(raw_frame, tuple(left_shoulder.astype(int)), 15, (0, 0, 255), -1)
+                    cv2.circle(raw_frame, tuple(right_shoulder.astype(int)), 15, (0, 0, 255), -1)
+
+            else:
+                logger.warning("No keypoints found in the results.")
+                return raw_frame, None, None
+        
+        return raw_frame, left_shoulder, right_shoulder    
     def stop(self):
         self.stopped.set()
         self.cap.release()
-
-    #         cam.release()
-    # out.release()
-    # cv2.destroyAllWindows()

@@ -7,7 +7,7 @@ wheels/
 *.egg-info
 
 # Temp files
-**/*video.mp4
+**/*.mp4
 video_capture.py
 
 # Virtual environments

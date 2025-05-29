@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "loguru>=0.7.3",
+    "numpy>=2.2.6",
     "opencv-python>=4.11.0.86",
+    "pillow>=11.2.1",
     "pyqt6>=6.9.0",
     "pyqtdarktheme>=2.1.0",
+    "requests>=2.32.3",
+    "ultralytics>=8.3.146",
 ]
