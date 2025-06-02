@@ -11,9 +11,13 @@ class PatientIdentification:
     This class will contain the GUI and logic part for the PatientIdentification
     """
 
-    def __init__(self):
+    def __init__(self, patient_data: dict):
         logger.info("Initializing PatientIdentification")
-        self.gui: PatientIdentificationGUI = PatientIdentificationGUI()
+        # ! Get patient dictionary from main app
+        self.patient_data: dict[str] = patient_data
+
+        # ! Initialize the GUI and logic
+        self.gui: PatientIdentificationGUI = PatientIdentificationGUI(self)
         self.logic: PatientIdentificationLogic = PatientIdentificationLogic(self, worker_frequency=30)
 
 
@@ -22,8 +26,9 @@ class PatientIdentificationGUI(QWidget):
     This class will contain the GUI part for the PatientIdentification
     """
 
-    def __init__(self):
+    def __init__(self, parent: PatientIdentification):
         super().__init__()
+        self.parent: PatientIdentification = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(100, 30, 100, 30)
         self.setLayout(self.main_layout)
@@ -60,14 +65,14 @@ class PatientIdentificationGUI(QWidget):
         self.firstname_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
         form_layout.addRow("First name", self.firstname_input)
 
-        self.date_naissance_input = QLineEdit(self)
-        self.date_naissance_input.setMinimumHeight(40)
-        self.date_naissance_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
-        self.date_naissance_input.setPlaceholderText("DD/MM/YYYY")
-        self.date_naissance_input.setMaxLength(10)
-        self.date_naissance_input.setInputMask("99/99/9999")
-        self.date_naissance_input.setText("01/01/2000")
-        form_layout.addRow("Date of birth", self.date_naissance_input)
+        self.birthday_input = QLineEdit(self)
+        self.birthday_input.setMinimumHeight(40)
+        self.birthday_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
+        self.birthday_input.setPlaceholderText("DD/MM/YYYY")
+        self.birthday_input.setMaxLength(10)
+        self.birthday_input.setInputMask("99/99/9999")
+        self.birthday_input.setText("01/01/2000")
+        form_layout.addRow("Date of birth", self.birthday_input)
 
         center_layout.addLayout(form_layout, stretch=1)
 
@@ -83,7 +88,10 @@ class PatientIdentificationGUI(QWidget):
         self.setLayout(self.main_layout)
 
     def on_ok_clicked(self) -> None:
-        print("OK button clicked")
+        logger.info("OK button clicked")
+        self.parent.patient_data["lastname"] = self.name_input.text()
+        self.parent.patient_data["firstname"] = self.firstname_input.text()
+        self.parent.patient_data["birthday"] = self.birthday_input.text()
 
     def __init_footer(self) -> None:
         pass
@@ -108,4 +116,5 @@ class PatientIdentificationLogic(QRunnable):
             logger.debug(f"Running logic at {self.worker_frequency} Hz")
 
     def stop(self) -> None:
+        print(self.parent.patient_data)
         self.stopped.set()

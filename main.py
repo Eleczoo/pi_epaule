@@ -62,7 +62,11 @@ class MainApp(QMainWindow):
             600,
         )
 
-        self.patient_identification: PatientIdentification = PatientIdentification()
+        # ! Init dictionary to store all patient data
+        self.patient_data: dict[str] = {}
+
+        # ! Init the different tabs
+        self.patient_identification: PatientIdentification = PatientIdentification(self.patient_data)
         self.pain_type: PainType = PainType()
         self.pain_localization: PainLocalization = PainLocalization()
         self.palpation: Palpation = Palpation()
