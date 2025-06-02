@@ -3,7 +3,7 @@ from multiprocessing.synchronize import Event as EventClass
 
 import cv2
 from loguru import logger
-from PyQt6.QtCore import QObject, QRunnable, Qt, pyqtSignal
+from PyQt6.QtCore import QObject, QRunnable, Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 from ultralytics import YOLO
@@ -28,8 +28,14 @@ class PainLocalization:
     This class will contain the GUI and logic part for the PainLocalization
     """
 
-    def __init__(self):
+    def __init__(self, patient_data: dict, tab_widget: QWidget):
         logger.info("Initializing PainLocalization")
+
+        # ! Get patient dictionary from main app
+        self.patient_data: dict[str] = patient_data
+        self.tab_widget: QWidget = tab_widget
+
+        # ! Initialize the GUI and logic
         self.logic: PainLocalizationLogic = PainLocalizationLogic(
             self,
             worker_frequency=30,
@@ -105,7 +111,7 @@ class PainLocalizationGUI(QWidget):
 
         self.timer_button = QPushButton("Lancer un timer", self)
         self.timer_button.setStyleSheet("background-color: green; color: white;")
-        self.timer_button.clicked.connect(lambda: print("Timer launched."))
+        self.timer_button.clicked.connect(self.timer_clicked)
 
         self.ok_button = QPushButton("Ok", self)
         self.ok_button.setStyleSheet("background-color: green; color: white;")
@@ -116,6 +122,14 @@ class PainLocalizationGUI(QWidget):
 
         self.main_layout.addLayout(content_layout, stretch=1)
         self.main_layout.addLayout(buttons_layout)
+        
+        # Timer Setup
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timer_timeout)
+
+        self.timer_update_label = QTimer(self)
+        self.timer_update_label.timeout.connect(self.set_current_timer_label)
+
 
     def update_image(self, image: QImage):
         """
@@ -125,7 +139,30 @@ class PainLocalizationGUI(QWidget):
         self.flux_cam_label.setPixmap(QPixmap.fromImage(image))
 
     def on_ok_clicked(self):
-        print("Pain localization confirmed.")
+        # TODO : Save the localization and elements in the patient_data dictionary
+
+        self.pain_localization.tab_widget.setCurrentIndex(3)  # Switch to the next tab (Pain Localization)
+
+    def timer_clicked(self):
+        self.timer.start(5000)
+        self.timer_update_label.start(100)  # Update label every 100ms
+        print("Timer button clicked.")
+
+    def set_current_timer_label(self):
+        remaining_time = self.timer.remainingTime()
+        if remaining_time > 0:
+            self.timer_button.setText(f"{remaining_time / 1000:.1f} Secondes restantes")
+        else:
+            self.timer_button.setText("Lancer un timer")
+            self.timer_update_label.stop()
+
+    def timer_timeout(self):
+        print("Timer finished.")
+        self.timer_button.setText("Lancer un timer")
+        self.timer_update_label.stop()
+
+        # TODO Call the logic to get localization and elements
+
 
     def __init_footer(self):
         pass
