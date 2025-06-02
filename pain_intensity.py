@@ -161,8 +161,11 @@ class PainIntensityGUI(QWidget):
 
 
     def on_ok_clicked(self):
-        print(f"Pain intensity 1 confirmed: {self.intensity_slider.value()}")
-        print(f"Pain intensity 2 confirmed: {self.intensity_slider2.value()}")
+        self.parent.patient_data["pain_intensity"] = {
+            "intensity1": self.intensity_slider.value(),
+            "intensity2": self.intensity_slider2.value()
+        }
+        self.parent.tab_widget.setCurrentIndex(5)  # Switch to the next tab (Other tab)
 
     def __init_footer(self):
         pass
