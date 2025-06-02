@@ -141,7 +141,10 @@ class PainLocalizationGUI(QWidget):
     def on_ok_clicked(self):
         # TODO : Save the localization and elements in the patient_data dictionary
 
-        self.pain_localization.tab_widget.setCurrentIndex(3)  # Switch to the next tab (Pain Localization)
+        if self.pain_localization.patient_data["pain_type"] == "Continuous Pain":
+            self.pain_localization.tab_widget.setCurrentIndex(4) # Switch to the next tab (Pain Intensity)
+        else:
+            self.pain_localization.tab_widget.setCurrentIndex(3) # Switch to the next tab (Palpation)
 
     def timer_clicked(self):
         self.timer.start(5000)
