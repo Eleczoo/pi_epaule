@@ -89,11 +89,11 @@ class PatientIdentificationGUI(QWidget):
         self.setLayout(self.main_layout)
 
     def on_ok_clicked(self) -> None:
-        logger.info("OK button clicked")
         self.parent.patient_data["lastname"] = self.name_input.text()
         self.parent.patient_data["firstname"] = self.firstname_input.text()
         self.parent.patient_data["birthday"] = self.birthday_input.text()
-        self.parent.tab_widget.setCurrentIndex(1)
+        
+        self.parent.tab_widget.setCurrentIndex(1) # Switch to the next tab (Pain Type)
 
     def __init_footer(self) -> None:
         pass

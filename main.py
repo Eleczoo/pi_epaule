@@ -70,7 +70,7 @@ class MainApp(QMainWindow):
 
         # ! Init the different tabs
         self.patient_identification: PatientIdentification = PatientIdentification(self.patient_data, self.tab_widget)
-        self.pain_type: PainType = PainType()
+        self.pain_type: PainType = PainType(self.patient_data, self.tab_widget)
         self.pain_localization: PainLocalization = PainLocalization()
         self.palpation: Palpation = Palpation()
         self.pain_intensity: PainIntensity = PainIntensity()

@@ -12,9 +12,14 @@ class PainType:
     This class will contain the GUI and logic part for the Pain Type Selector
     """
 
-    def __init__(self):
+    def __init__(self, patient_data: dict, tab_widget: QWidget):
         logger.info("Initializing PainType")
-        self.gui: PainTypeGUI = PainTypeGUI()
+         # ! Get patient dictionary from main app
+        self.patient_data: dict[str] = patient_data
+        self.tab_widget: QWidget = tab_widget
+
+        # ! Initialize the GUI and logic
+        self.gui: PainTypeGUI = PainTypeGUI(self)
         self.logic: PainTypeLogic = PainTypeLogic(self, worker_frequency=30)
 
 
@@ -23,8 +28,9 @@ class PainTypeGUI(QWidget):
     This class will contain the GUI part for the Pain Type Selector
     """
 
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent: PainType = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.init_ui()
@@ -109,10 +115,11 @@ class PainTypeGUI(QWidget):
 
     def on_ok_clicked(self):
         if self.radio_continuous.isChecked():
-            self.choice = "Continuous Pain"
+            self.parent.patient_data["pain_type"] = "Continuous Pain"
         else:
-            self.choice = "Pain on Palpation"
-        print(f"User selected: {self.choice}")
+            self.parent.patient_data["pain_type"] = "Pain on Palpation"
+        
+        self.parent.tab_widget.setCurrentIndex(2)  # Switch to the next tab (Pain Localization)
 
 
 class PainTypeLogic(QRunnable):
