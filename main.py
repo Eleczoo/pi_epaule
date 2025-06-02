@@ -72,7 +72,7 @@ class MainApp(QMainWindow):
         self.patient_identification: PatientIdentification = PatientIdentification(self.patient_data, self.tab_widget)
         self.pain_type: PainType = PainType(self.patient_data, self.tab_widget)
         self.pain_localization: PainLocalization = PainLocalization(self.patient_data, self.tab_widget)
-        self.palpation: Palpation = Palpation()
+        self.palpation: Palpation = Palpation(self.patient_data, self.tab_widget)
         self.pain_intensity: PainIntensity = PainIntensity()
         self.other_pain: OtherPain = OtherPain()
 

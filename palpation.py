@@ -11,9 +11,14 @@ class Palpation:
     This class will contain the GUI and logic part for the Palpation page
     """
 
-    def __init__(self):
+    def __init__(self, patient_data: dict, tab_widget: QWidget):
         logger.info("Initializing Palpation")
-        self.gui: PalpationGUI = PalpationGUI()
+        # ! Get patient dictionary from main app
+        self.patient_data: dict[str] = patient_data
+        self.tab_widget: QWidget = tab_widget
+
+        # ! Initialize the GUI and logic
+        self.gui: PalpationGUI = PalpationGUI(self)
         self.logic: PalpationLogic = PalpationLogic(self, worker_frequency=30)
 
 
@@ -22,8 +27,9 @@ class PalpationGUI(QWidget):
     This class will contain the GUI part for the Palpation page
     """
 
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent: Palpation = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.main_layout.setSpacing(20)
@@ -84,7 +90,7 @@ class PalpationGUI(QWidget):
         print("Skip button clicked")
 
     def on_ok_clicked(self) -> None:
-        print("OK button clicked")
+        self.parent.tab_widget.setCurrentIndex(4)  # Switch to the next tab (Pain Intensity)
 
     def __init_footer(self) -> None:
         pass
