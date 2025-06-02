@@ -15,9 +15,14 @@ class PainIntensity:
     This class will contain the GUI and logic part for the PainIntensity
     """
 
-    def __init__(self):
+    def __init__(self, patient_data: dict, tab_widget: QWidget):
         logger.info("Initializing PainIntensity")
-        self.gui: PainIntensityGUI = PainIntensityGUI()
+        # ! Get patient dictionary from main app
+        self.patient_data: dict[str] = patient_data
+        self.tab_widget: QWidget = tab_widget
+
+        # ! Initialize the GUI and logic
+        self.gui: PainIntensityGUI = PainIntensityGUI(self)
         self.logic: PainIntensityLogic = PainIntensityLogic(self)
 
 
@@ -26,8 +31,9 @@ class PainIntensityGUI(QWidget):
     This class contains the GUI part for the PainIntensity
     """
 
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent: PainIntensity = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.setLayout(self.main_layout)
@@ -122,6 +128,9 @@ class PainIntensityGUI(QWidget):
 
         content_layout.addLayout(slider2_layout)
 
+        # Set second slider visibility based on the tab
+        self.parent.tab_widget.currentChanged.connect(self.on_tab_changed)
+
         # OK button centered in content
         button_layout = QHBoxLayout()
         self.ok_button = QPushButton("Ok", self)
@@ -137,6 +146,19 @@ class PainIntensityGUI(QWidget):
 
     def update_value_label2(self, value):
         self.value_label2.setText(str(value))
+
+    def set_second_slider_visible(self, visible: bool):
+        self.slider_label2.setVisible(visible)
+        self.intensity_slider2.setVisible(visible)
+        self.value_label2.setVisible(visible)
+
+    def on_tab_changed(self, index):
+        if index == 4:
+            if self.parent.patient_data["pain_type"] == "Continuous Pain":
+                self.set_second_slider_visible(False)
+            else:
+                self.set_second_slider_visible(True)
+
 
     def on_ok_clicked(self):
         print(f"Pain intensity 1 confirmed: {self.intensity_slider.value()}")
