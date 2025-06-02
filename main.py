@@ -65,8 +65,11 @@ class MainApp(QMainWindow):
         # ! Init dictionary to store all patient data
         self.patient_data: dict[str] = {}
 
+        # ! Init tab widget to switch between different tabs with buttons
+        self.tab_widget: QWidget = QTabWidget()
+
         # ! Init the different tabs
-        self.patient_identification: PatientIdentification = PatientIdentification(self.patient_data)
+        self.patient_identification: PatientIdentification = PatientIdentification(self.patient_data, self.tab_widget)
         self.pain_type: PainType = PainType()
         self.pain_localization: PainLocalization = PainLocalization()
         self.palpation: Palpation = Palpation()
@@ -96,26 +99,25 @@ class MainApp(QMainWindow):
         central_widget.setLayout(main_layout)
 
         # ! Main layout will only contain a tab widget
-        tab_widget = QTabWidget()
-        main_layout.addWidget(tab_widget)
+        main_layout.addWidget(self.tab_widget)
 
         # ! First tab :Patient Identification
-        tab_widget.addTab(self.patient_identification.gui, "Patient identification")
+        self.tab_widget.addTab(self.patient_identification.gui, "Patient identification")
 
         # ! Second tab : Pain type
-        tab_widget.addTab(self.pain_type.gui, "Pain type")
+        self.tab_widget.addTab(self.pain_type.gui, "Pain type")
 
         # ! Third tab : Pain localization
-        tab_widget.addTab(self.pain_localization.gui, "Pain localization")
+        self.tab_widget.addTab(self.pain_localization.gui, "Pain localization")
 
         # ! Palpation
-        tab_widget.addTab(self.palpation.gui, "Palpation")
+        self.tab_widget.addTab(self.palpation.gui, "Palpation")
 
         # ! Pain intensity
-        tab_widget.addTab(self.pain_intensity.gui, "Pain intensity")
+        self.tab_widget.addTab(self.pain_intensity.gui, "Pain intensity")
 
         # ! Pain intensity
-        tab_widget.addTab(self.other_pain.gui, "Other pain")
+        self.tab_widget.addTab(self.other_pain.gui, "Other pain")
 
         # ! --- simple label
         header_layout = QHBoxLayout()

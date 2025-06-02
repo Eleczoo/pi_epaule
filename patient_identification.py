@@ -11,10 +11,11 @@ class PatientIdentification:
     This class will contain the GUI and logic part for the PatientIdentification
     """
 
-    def __init__(self, patient_data: dict):
+    def __init__(self, patient_data: dict, tab_widget: QWidget):
         logger.info("Initializing PatientIdentification")
         # ! Get patient dictionary from main app
         self.patient_data: dict[str] = patient_data
+        self.tab_widget: QWidget = tab_widget
 
         # ! Initialize the GUI and logic
         self.gui: PatientIdentificationGUI = PatientIdentificationGUI(self)
@@ -92,6 +93,7 @@ class PatientIdentificationGUI(QWidget):
         self.parent.patient_data["lastname"] = self.name_input.text()
         self.parent.patient_data["firstname"] = self.firstname_input.text()
         self.parent.patient_data["birthday"] = self.birthday_input.text()
+        self.parent.tab_widget.setCurrentIndex(1)
 
     def __init_footer(self) -> None:
         pass
