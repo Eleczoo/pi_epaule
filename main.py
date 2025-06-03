@@ -64,6 +64,7 @@ class MainApp(QMainWindow):
         )
         # ! Init dictionary to store all patient data
         self.patient_data: dict[str] = {}
+        self.patient_data["pain_count"] = 0
 
         # ! Init tab widget to switch between different tabs with buttons
         self.tab_widget: QWidget = QTabWidget()

@@ -1,10 +1,12 @@
 import multiprocessing as mp
 from multiprocessing.synchronize import Event as EventClass
 
+import cv2 as cv
 from loguru import logger
 from PyQt6.QtCore import QRunnable, Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
+from report_creator import ReportCreator
 from toaster import Toaster
 
 
@@ -63,21 +65,86 @@ class OtherPainGUI(QWidget):
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(20)
 
-        self.no_button = QPushButton("Non", self)
+        self.no_button = QPushButton("Finir le test", self)
         self.no_button.setStyleSheet("background-color: orange; color: white; font-size: 14pt;")
         self.no_button.clicked.connect(self.on_no_clicked)
 
-        self.yes_button = QPushButton("Oui", self)
+        self.yes_button = QPushButton("Ajouter une douleur", self)
         self.yes_button.setStyleSheet("background-color: green; color: white; font-size: 14pt;")
         self.yes_button.clicked.connect(self.on_yes_clicked)
 
-        buttons_layout.addWidget(self.no_button)
         buttons_layout.addWidget(self.yes_button)
+        buttons_layout.addWidget(self.no_button)
         self.main_layout.addLayout(content_layout, stretch=1)
         self.main_layout.addLayout(buttons_layout)
 
     def on_no_clicked(self) -> None:
-        print("No button clicked")
+        logger.info("No button clicked, generating report...")
+
+        template_dir = "report_template"
+        report_temp_dir = "report_temp_dir"
+
+        report_creator = ReportCreator(
+            template_dir=template_dir,
+            report_temp_dir=report_temp_dir,
+            report_output_pdf=f"{self.other_pain.patient_data['firstname']}_{self.other_pain.patient_data['lastname']}_report.pdf",
+        )
+
+        report_creator.add_title("Rapport de douleur")
+
+        report_creator.add_subtitle("Identification du patient")
+
+        report_creator.add_list(
+            [
+                f"Prenom: {self.other_pain.patient_data['firstname']}\r",
+                f"Nom de famille: {self.other_pain.patient_data['lastname']}\r",
+                f"Date de naissance: {self.other_pain.patient_data['data_of_birth']}\r",
+            ]
+        )
+
+        pain_count = self.other_pain.patient_data.get("pain_count", 0)
+        logger.debug(f"Number of pains to report: {pain_count}")
+        for i in range(pain_count + 1):
+            report_creator.add_pagebreak()
+            report_creator.add_subtitle(f"Douleur n°{i + 1}")
+            report_creator.add_paragraph(
+                f"Type de douleur: {self.other_pain.patient_data.get(f'pain_type_{i}', 'Non spécifié')}\r",
+            )
+
+            if self.other_pain.patient_data.get(f"pain_type_{i}") == "Douleur Continue":
+                report_creator.add_paragraph(
+                    f"Intensité de la douleur: {self.other_pain.patient_data.get(f'pain_intensity1_{i}', 'Non spécifié')}\r"
+                )
+            else:
+                report_creator.add_list(
+                    [
+                        f"Intensité de la douleur continue : {self.other_pain.patient_data.get(f'pain_intensity1_{i}', 'Non spécifié')}\r",
+                        f"Intensité de la douleur à la palpation : {self.other_pain.patient_data.get(f'pain_intensity2_{i}', 'Non spécifié')}\r",
+                    ]
+                )
+
+            ff = f"saved_img_{i}"
+            pain_localization_image: cv.Mat = self.other_pain.patient_data.get(ff, None)
+            logger.debug(f"{ff = }")
+            logger.debug(f"{self.other_pain.patient_data[ff].sum()=}")
+            # logger.debug(f"img sum {self.other_pain.patient_data[f'saved_img_{0}'].sum()}")
+            # logger.debug(f"img sum {self.other_pain.patient_data[f'saved_img_{1}'].sum()}")
+
+            path = report_creator.save_image(
+                filename=f"image_{i + 1}.png",
+                image_data=pain_localization_image,
+            )
+
+            logger.debug(f"Image saved at {path}")
+
+            report_creator.add_image(
+                image_path=path,
+                caption=f"Localisation Douleur N°{i + 1}",
+            )
+
+        logger.info("Starting to compile the report...")
+        report_creator.compile_report()
+        logger.info("Report compiled successfully.")
 
     def on_yes_clicked(self) -> None:
         # Get the current pain index from the pain_count

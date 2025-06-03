@@ -12,3 +12,5 @@ video_capture.py
 
 # Virtual environments
 .venv
+
+report_temp_dir

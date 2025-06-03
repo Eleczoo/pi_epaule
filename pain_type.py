@@ -49,7 +49,13 @@ class PainTypeGUI(QWidget):
         self.header_label = QLabel("Type de douleur", self)
         self.header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
         self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        self.sub_label = QLabel("Douleur n°1", self)
+        self.sub_label.setStyleSheet("font-size: 14pt; font-weight: normal;")
+        self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
         self.main_layout.addWidget(self.header_label)
+        self.main_layout.addWidget(self.sub_label)
 
     def __init_content(self) -> None:
         # Centered radio buttons in a vertical layout
@@ -119,12 +125,16 @@ class PainTypeGUI(QWidget):
     def on_ok_clicked(self):
         # Get the current pain index from the pain_count
         pain_index = self.pain_type.patient_data.get("pain_count", 0)
+        print(f"Current pain index: {pain_index}")
 
         # Store the pain type for the current pain index
         if self.radio_continuous.isChecked():
-            self.pain_type.patient_data[f"pain_type_{pain_index}"] = "Continuous Pain"
+            self.pain_type.patient_data[f"pain_type_{pain_index}"] = "Douleur Continue"
         else:
-            self.pain_type.patient_data[f"pain_type_{pain_index}"] = "Pain on Palpation"
+            self.pain_type.patient_data[f"pain_type_{pain_index}"] = "Douleur à la Palpation"
+
+        # Change the sub-label to indicate the next pain number (for the next pain type, if there is one)
+        self.sub_label.setText(f"Douleur n°{pain_index + 2}")
 
         # Switch to the next tab (Pain Localization)
         self.pain_type.tab_widget.setCurrentIndex(2)

@@ -76,7 +76,7 @@ class PalpationGUI(QWidget):
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(20)
 
-        self.skip_button = QPushButton("Skip", self)
+        self.skip_button = QPushButton("(Trop douloureux / Pas accessible) Passer à la suite ", self)
         self.skip_button.setStyleSheet("background-color: orange; color: white; font-size: 14pt;")
         self.skip_button.clicked.connect(self.on_skip_clicked)
 
@@ -94,7 +94,14 @@ class PalpationGUI(QWidget):
         print("Skip button clicked")
 
     def on_ok_clicked(self) -> None:
-        self.parent.tab_widget.setCurrentIndex(4)  # Switch to the next tab (Pain Intensity)
+        # Get the current pain index from the pain_count
+        pain_index = self.parent.patient_data.get("pain_count", 0)
+
+        # Change the sub-label to indicate the next pain number (for the next pain type, if there is one)
+        self.sub_label.setText(f"Douleur n°{pain_index + 2}")
+
+        # ! Switch to the next tab (Pain Intensity)
+        self.parent.tab_widget.setCurrentIndex(4)
 
     def __init_footer(self) -> None:
         pass

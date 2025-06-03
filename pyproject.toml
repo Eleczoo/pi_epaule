@@ -13,5 +13,6 @@ dependencies = [
     "pyqt6>=6.9.0",
     "pyqtdarktheme>=2.1.0",
     "requests>=2.32.3",
+    "typst>=0.13.2",
     "ultralytics>=8.3.146",
 ]

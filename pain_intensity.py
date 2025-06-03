@@ -160,20 +160,29 @@ class PainIntensityGUI(QWidget):
             # Get the current pain index from the pain_count
             pain_index = self.pain_intensity.patient_data.get("pain_count", 0)
 
-            if self.pain_intensity.patient_data[f"pain_type_{pain_index}"] == "Continuous Pain":
+            logger.debug(f"pain_type_{pain_index}: {self.pain_intensity.patient_data[f'pain_type_{pain_index}']}")
+
+            if self.pain_intensity.patient_data[f"pain_type_{pain_index}"] == "Douleur Continue":
+                logger.debug("Setting second slider to invisible")
                 self.set_second_slider_visible(False)
             else:
+                logger.debug("Setting second slider to visible")
                 self.set_second_slider_visible(True)
 
     def on_ok_clicked(self):
         # Get the current pain index from the pain_count
         pain_index = self.pain_intensity.patient_data.get("pain_count", 0)
 
-        self.pain_intensity.patient_data[f"pain_intensity_{pain_index}"] = {
-            "intensity1": self.intensity_slider.value(),
-            "intensity2": self.intensity_slider2.value(),
-        }
-        self.pain_intensity.tab_widget.setCurrentIndex(5)  # Switch to the next tab (Other tab)
+        # Store the pain intensity values in the patient_data dictionary
+        self.pain_intensity.patient_data[f"pain_intensity1_{pain_index}"] = self.intensity_slider.value()
+        if self.pain_intensity.patient_data[f"pain_type_{pain_index}"] == "Douleur à la Palpation":
+            self.pain_intensity.patient_data[f"pain_intensity2_{pain_index}"] = self.intensity_slider2.value()
+
+        # Change the sub-label to indicate the next pain number (for the next pain type, if there is one)
+        self.sub_label.setText(f"Douleur n°{pain_index + 2}")
+
+        # ! Switch to the next tab (Other tab)
+        self.pain_intensity.tab_widget.setCurrentIndex(5)
 
     def __init_footer(self):
         pass

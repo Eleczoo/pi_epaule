@@ -98,15 +98,11 @@ class PatientIdentificationGUI(QWidget):
 
         # Check if fields are filled
         if not self.parent.patient_data["firstname"]:
-            self.parent.toaster.show_warning("First name not filled.")
+            self.parent.toaster.show_warning("Le prénom est manquant.")
             return
 
         if not self.parent.patient_data["lastname"]:
-            self.parent.toaster.show_warning("Last name not filled.")
-            return
-
-        if not self.parent.patient_data["firstname"]:
-            self.parent.toaster.show_warning("First name not filled.")
+            self.parent.toaster.show_warning("Le nom de famille est manquant.")
             return
 
         # Check if birthday is filled and in the correct format
@@ -116,7 +112,7 @@ class PatientIdentificationGUI(QWidget):
             or len(self.parent.patient_data["data_of_birth"]) != 10
             or self.parent.patient_data["data_of_birth"] == "01/01/1900"
         ):
-            self.parent.toaster.show_warning("Birthday not filled correctly.")
+            self.parent.toaster.show_warning("La date de naissance n'est pas remplie correctement.")
             return
 
         #  Check if birthday does not make us older than 120 years or younger than 3 years
@@ -127,10 +123,14 @@ class PatientIdentificationGUI(QWidget):
             birthday = datetime.strptime(self.parent.patient_data["data_of_birth"], "%d/%m/%Y")
             age = today - birthday
             if age < timedelta(days=3 * 365) or age > timedelta(days=120 * 365):
-                self.parent.toaster.show_warning("Birthday not valid, must be between 3 and 120 years old.")
+                self.parent.toaster.show_warning(
+                    "La date de naissance n'est pas valide, elle doit être comprise entre 3 et 120 ans."
+                )
                 return
         except ValueError:
-            self.parent.toaster.show_warning("Birthday not filled correctly, must be in the format DD/MM/YYYY.")
+            self.parent.toaster.show_warning(
+                "La date de naissance n'est pas remplie correctement, elle doit être au format JJ/MM/AAAA."
+            )
             return
 
         self.parent.tab_widget.setCurrentIndex(1)  # Switch to the next tab (Pain Type)

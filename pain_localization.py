@@ -129,7 +129,8 @@ class PainLocalizationGUI(QWidget):
         self.timer_button.clicked.connect(self.timer_clicked)
 
         self.ok_button = QPushButton("Ok", self)
-        self.ok_button.setStyleSheet("background-color: green; color: white;")
+        self.ok_button.setStyleSheet("background-color: gray; color: white;")
+        self.ok_button.setEnabled(False)  # Initially disabled
         self.ok_button.clicked.connect(self.on_ok_clicked)
 
         buttons_layout.addWidget(self.timer_button)
@@ -156,17 +157,28 @@ class PainLocalizationGUI(QWidget):
         # Get the current pain index from the pain_count
         pain_index = self.pain_localization.patient_data.get("pain_count", 0)
 
-        # TODO : Save the localization and elements in the patient_data dictionary
-        elements = {}
-        self.pain_localization.patient_data[f"elements_{pain_index}"] = elements
+        # TODO : Save the localization, elements and captured image in the patient_data dictionary
+        self.pain_localization.patient_data[f"saved_img_{pain_index}"] = self.saved_image.copy()  # Save the captured image
 
-        if self.pain_localization.patient_data[f"pain_type_{pain_index}"] == "Continuous Pain":
+        # ! Clear captured image
+        self.captured_image.clear()
+        self.captured_frame = None
+
+        # Change the sub-label to indicate the next pain number (for the next pain type, if there is one)
+        self.sub_label.setText(f"Douleur n°{pain_index + 2}")
+
+        # Disable the OK button and reset its style
+        self.ok_button.setEnabled(False)
+        self.ok_button.setStyleSheet("background-color: gray; color: white;")
+
+        # ! Change to next tab based on the pain type
+        if self.pain_localization.patient_data[f"pain_type_{pain_index}"] == "Douleur Continue":
             self.pain_localization.tab_widget.setCurrentIndex(4)  # Switch to the next tab (Pain Intensity)
         else:
             self.pain_localization.tab_widget.setCurrentIndex(3)  # Switch to the next tab (Palpation)
 
     def timer_clicked(self):
-        self.timer.start(5000)
+        self.timer.start(1000)
         self.timer_update_label.start(100)  # Update label every 100ms
         print("Timer button clicked.")
 
@@ -193,6 +205,7 @@ class PainLocalizationGUI(QWidget):
 
         # ! Show the captured image
         captured_image = self.pain_localization.logic.frame.copy()
+        self.saved_image = captured_image.copy()  # Save the captured image for dictionary
         if captured_image is not None:
             left_shoulder, right_shoulder = self.pain_localization.logic.detect_shoulders(captured_image)
             if left_shoulder is not None and right_shoulder is not None:
@@ -201,6 +214,9 @@ class PainLocalizationGUI(QWidget):
                 # Draw shoulders on the captured image
                 cv2.circle(captured_image, self.left_shoulder_coord, 15, (0, 0, 255), -1)  # Draw left shoulder
                 cv2.circle(captured_image, self.right_shoulder_coord, 15, (0, 0, 255), -1)  # Draw right shoulder
+            else:
+                self.pain_localization.toaster.show_warning("Epaule non détectée, veuillez réessayer.")
+                return
 
             # Detect marker
             marker_coord = self.pain_localization.logic.detect_marker(captured_image, left_shoulder, right_shoulder)
@@ -208,6 +224,9 @@ class PainLocalizationGUI(QWidget):
                 self.marker_coord = tuple(marker_coord)
                 # Draw marker on the captured image
                 cv2.circle(captured_image, self.marker_coord, 10, (255, 0, 0), -1)  # Draw marker
+            else:
+                self.pain_localization.toaster.show_warning("Dispositif non détecté, veuillez réessayer.")
+                return
 
             # Rescale and Convert the drawned image to QImage
             height, width, channel = captured_image.shape
@@ -221,6 +240,13 @@ class PainLocalizationGUI(QWidget):
             )
 
             self.captured_image.setPixmap(QPixmap.fromImage(scaled_img))
+
+            # ! Enable the OK button and set it to green
+            self.ok_button.setEnabled(True)
+            self.ok_button.setStyleSheet("background-color: green; color: white;")
+        else:
+            self.pain_localization.toaster.show_warning("Aucune image capturée, veuillez réessayer.")
+            return
 
     def __init_footer(self):
         pass
