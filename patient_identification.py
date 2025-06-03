@@ -46,7 +46,7 @@ class PatientIdentificationGUI(QWidget):
         self.__init_footer()
 
     def __init_header(self) -> None:
-        self.header_label = QLabel("Patient identification", self)
+        self.header_label = QLabel("Identification du patient", self)
         self.header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
         self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addWidget(self.header_label)
@@ -62,12 +62,12 @@ class PatientIdentificationGUI(QWidget):
         self.name_input = QLineEdit(self)
         self.name_input.setMinimumHeight(40)
         self.name_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
-        form_layout.addRow("Name", self.name_input)
+        form_layout.addRow("Prénom", self.name_input)
 
         self.firstname_input = QLineEdit(self)
         self.firstname_input.setMinimumHeight(40)
         self.firstname_input.setStyleSheet("border: 1px solid black; font-size: 16pt;")
-        form_layout.addRow("First name", self.firstname_input)
+        form_layout.addRow("Nom de famille", self.firstname_input)
 
         self.birthday_input = QLineEdit(self)
         self.birthday_input.setMinimumHeight(40)
@@ -76,7 +76,7 @@ class PatientIdentificationGUI(QWidget):
         self.birthday_input.setMaxLength(10)
         self.birthday_input.setInputMask("99/99/9999")
         self.birthday_input.setText("01/01/1900")
-        form_layout.addRow("Date of birth", self.birthday_input)
+        form_layout.addRow("Date de naissance", self.birthday_input)
 
         center_layout.addLayout(form_layout, stretch=1)
 
@@ -92,11 +92,15 @@ class PatientIdentificationGUI(QWidget):
         self.setLayout(self.main_layout)
 
     def on_ok_clicked(self) -> None:
-        self.parent.patient_data["lastname"] = self.name_input.text()
-        self.parent.patient_data["firstname"] = self.firstname_input.text()
-        self.parent.patient_data["birthday"] = self.birthday_input.text()
+        self.parent.patient_data["firstname"] = self.name_input.text()
+        self.parent.patient_data["lastname"] = self.firstname_input.text()
+        self.parent.patient_data["data_of_birth"] = self.birthday_input.text()
 
         # Check if fields are filled
+        if not self.parent.patient_data["firstname"]:
+            self.parent.toaster.show_warning("First name not filled.")
+            return
+
         if not self.parent.patient_data["lastname"]:
             self.parent.toaster.show_warning("Last name not filled.")
             return
@@ -108,9 +112,9 @@ class PatientIdentificationGUI(QWidget):
         # Check if birthday is filled and in the correct format
         # And not the default value
         if (
-            not self.parent.patient_data["birthday"]
-            or len(self.parent.patient_data["birthday"]) != 10
-            or self.parent.patient_data["birthday"] == "01/01/1900"
+            not self.parent.patient_data["data_of_birth"]
+            or len(self.parent.patient_data["data_of_birth"]) != 10
+            or self.parent.patient_data["data_of_birth"] == "01/01/1900"
         ):
             self.parent.toaster.show_warning("Birthday not filled correctly.")
             return
@@ -120,7 +124,7 @@ class PatientIdentificationGUI(QWidget):
 
         today = datetime.now()
         try:
-            birthday = datetime.strptime(self.parent.patient_data["birthday"], "%d/%m/%Y")
+            birthday = datetime.strptime(self.parent.patient_data["data_of_birth"], "%d/%m/%Y")
             age = today - birthday
             if age < timedelta(days=3 * 365) or age > timedelta(days=120 * 365):
                 self.parent.toaster.show_warning("Birthday not valid, must be between 3 and 120 years old.")

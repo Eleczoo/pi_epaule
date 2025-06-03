@@ -46,7 +46,7 @@ class PainTypeGUI(QWidget):
         self.setLayout(self.main_layout)
 
     def __init_header(self) -> None:
-        self.header_label = QLabel("Pain Type", self)
+        self.header_label = QLabel("Type de douleur", self)
         self.header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
         self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addWidget(self.header_label)
@@ -57,9 +57,9 @@ class PainTypeGUI(QWidget):
         radio_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
         self.radio_group = QButtonGroup(self)
-        self.radio_continuous = QRadioButton("Continuous Pain", self)
+        self.radio_continuous = QRadioButton("La douleur est constamment présente", self)
         self.radio_continuous.setChecked(True)
-        self.radio_palpation = QRadioButton("Pain on Palpation", self)
+        self.radio_palpation = QRadioButton("La douleur n'est présente qu'à la palpation", self)
 
         style = """
         QRadioButton {

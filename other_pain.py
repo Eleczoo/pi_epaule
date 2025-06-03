@@ -41,7 +41,7 @@ class OtherPainGUI(QWidget):
         self.__init_footer()
 
     def __init_header(self) -> None:
-        self.header_label = QLabel("Other pain", self)
+        self.header_label = QLabel("Autres douleurs", self)
         self.header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
         self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addWidget(self.header_label)
@@ -51,7 +51,7 @@ class OtherPainGUI(QWidget):
         content_layout = QVBoxLayout()
         content_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
-        self.central_text = QLabel("Please indicate if there is another pain", self)
+        self.central_text = QLabel("Avez-vous une autre douleur à nous indiquer ?", self)
         self.central_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.central_text.setStyleSheet(
             "font-size: 20pt; font-weight: bold; color: #333; border: 1px solid #ccc; background: #f9f9f9;"
@@ -63,11 +63,11 @@ class OtherPainGUI(QWidget):
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(20)
 
-        self.no_button = QPushButton("No", self)
+        self.no_button = QPushButton("Non", self)
         self.no_button.setStyleSheet("background-color: orange; color: white; font-size: 14pt;")
         self.no_button.clicked.connect(self.on_no_clicked)
 
-        self.yes_button = QPushButton("Yes", self)
+        self.yes_button = QPushButton("Oui", self)
         self.yes_button.setStyleSheet("background-color: green; color: white; font-size: 14pt;")
         self.yes_button.clicked.connect(self.on_yes_clicked)
 

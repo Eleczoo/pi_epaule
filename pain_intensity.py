@@ -49,7 +49,7 @@ class PainIntensityGUI(QWidget):
         self.__init_footer()
 
     def __init_header(self):
-        self.header_label = QLabel("Pain Intensity", self)
+        self.header_label = QLabel("Intensité de la douleur", self)
         self.header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
         self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addWidget(self.header_label)
@@ -68,7 +68,7 @@ class PainIntensityGUI(QWidget):
         slider1_layout = QVBoxLayout()
         slider1_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
-        self.slider_label = QLabel("Select Intensity :", self)
+        self.slider_label = QLabel("Choisissez l'intensité de la douleur continue :", self)
         self.slider_label.setStyleSheet("font-size: 12pt;")
         self.slider_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         slider1_layout.addWidget(self.slider_label)
@@ -101,7 +101,7 @@ class PainIntensityGUI(QWidget):
         slider2_layout = QVBoxLayout()
         slider2_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
-        self.slider_label2 = QLabel("Select Intensity 2 :", self)
+        self.slider_label2 = QLabel("Choisissez l'intensité de la douleur à la palpation :", self)
         self.slider_label2.setStyleSheet("font-size: 12pt;")
         self.slider_label2.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         slider2_layout.addWidget(self.slider_label2)

@@ -85,7 +85,7 @@ class PainLocalizationGUI(QWidget):
             self.captured_image.setPixmap(QPixmap.fromImage(scaled_img))
 
     def __init_header(self):
-        header_label = QLabel("Pain Localization", self)
+        header_label = QLabel("Localisation de la douleur", self)
         header_label.setStyleSheet("font-size: 18pt; font-weight: bold;")
         header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
