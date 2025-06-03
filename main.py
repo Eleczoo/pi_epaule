@@ -74,7 +74,7 @@ class MainApp(QMainWindow):
         self.pain_localization: PainLocalization = PainLocalization(self.patient_data, self.tab_widget)
         self.palpation: Palpation = Palpation(self.patient_data, self.tab_widget)
         self.pain_intensity: PainIntensity = PainIntensity(self.patient_data, self.tab_widget)
-        self.other_pain: OtherPain = OtherPain()
+        self.other_pain: OtherPain = OtherPain(self.patient_data, self.tab_widget)
 
         # ! Init the worker thread
         self.threadpool = QtCore.QThreadPool()
@@ -129,6 +129,7 @@ class MainApp(QMainWindow):
         self.show()
 
     def closeEvent(self, a0):
+        print(self.patient_data)
         print("Closing app")
         self.pain_localization.logic.stop()
         self.threadpool.clear()

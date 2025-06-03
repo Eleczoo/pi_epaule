@@ -33,7 +33,7 @@ class PainIntensityGUI(QWidget):
 
     def __init__(self, parent):
         super().__init__()
-        self.parent: PainIntensity = parent
+        self.pain_intensity: PainIntensity = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.setLayout(self.main_layout)
@@ -129,7 +129,7 @@ class PainIntensityGUI(QWidget):
         content_layout.addLayout(slider2_layout)
 
         # Set second slider visibility based on the tab
-        self.parent.tab_widget.currentChanged.connect(self.on_tab_changed)
+        self.pain_intensity.tab_widget.currentChanged.connect(self.on_tab_changed)
 
         # OK button centered in content
         button_layout = QHBoxLayout()
@@ -154,18 +154,24 @@ class PainIntensityGUI(QWidget):
 
     def on_tab_changed(self, index):
         if index == 4:
-            if self.parent.patient_data["pain_type"] == "Continuous Pain":
+            # Get the current pain index from the pain_count
+            pain_index = self.pain_intensity.patient_data.get("pain_count", 0)
+            
+            if self.pain_intensity.patient_data[f"pain_type_{pain_index}"] == "Continuous Pain":
                 self.set_second_slider_visible(False)
             else:
                 self.set_second_slider_visible(True)
 
 
     def on_ok_clicked(self):
-        self.parent.patient_data["pain_intensity"] = {
+        # Get the current pain index from the pain_count
+        pain_index = self.pain_intensity.patient_data.get("pain_count", 0)
+
+        self.pain_intensity.patient_data[f"pain_intensity_{pain_index}"] = {
             "intensity1": self.intensity_slider.value(),
             "intensity2": self.intensity_slider2.value()
         }
-        self.parent.tab_widget.setCurrentIndex(5)  # Switch to the next tab (Other tab)
+        self.pain_intensity.tab_widget.setCurrentIndex(5)  # Switch to the next tab (Other tab)
 
     def __init_footer(self):
         pass

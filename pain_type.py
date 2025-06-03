@@ -30,7 +30,7 @@ class PainTypeGUI(QWidget):
 
     def __init__(self, parent):
         super().__init__()
-        self.parent: PainType = parent
+        self.pain_type: PainType = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.init_ui()
@@ -114,13 +114,17 @@ class PainTypeGUI(QWidget):
         pass
 
     def on_ok_clicked(self):
-        if self.radio_continuous.isChecked():
-            self.parent.patient_data["pain_type"] = "Continuous Pain"
-        else:
-            self.parent.patient_data["pain_type"] = "Pain on Palpation"
-        
-        self.parent.tab_widget.setCurrentIndex(2)  # Switch to the next tab (Pain Localization)
+        # Get the current pain index from the pain_count
+        pain_index = self.pain_type.patient_data.get("pain_count", 0)
 
+        # Store the pain type for the current pain index
+        if self.radio_continuous.isChecked():
+            self.pain_type.patient_data[f"pain_type_{pain_index}"] = "Continuous Pain"
+        else:
+            self.pain_type.patient_data[f"pain_type_{pain_index}"] = "Pain on Palpation"
+
+        # Switch to the next tab (Pain Localization)
+        self.pain_type.tab_widget.setCurrentIndex(2)
 
 class PainTypeLogic(QRunnable):
     """

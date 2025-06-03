@@ -139,9 +139,14 @@ class PainLocalizationGUI(QWidget):
         self.flux_cam_label.setPixmap(QPixmap.fromImage(image))
 
     def on_ok_clicked(self):
-        # TODO : Save the localization and elements in the patient_data dictionary
+        # Get the current pain index from the pain_count
+        pain_index = self.pain_localization.patient_data.get("pain_count", 0)
 
-        if self.pain_localization.patient_data["pain_type"] == "Continuous Pain":
+        # TODO : Save the localization and elements in the patient_data dictionary
+        elements = {}
+        self.pain_localization.patient_data[f"elements_{pain_index}"] = elements
+
+        if self.pain_localization.patient_data[f"pain_type_{pain_index}"] == "Continuous Pain":
             self.pain_localization.tab_widget.setCurrentIndex(4) # Switch to the next tab (Pain Intensity)
         else:
             self.pain_localization.tab_widget.setCurrentIndex(3) # Switch to the next tab (Palpation)

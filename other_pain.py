@@ -11,9 +11,14 @@ class OtherPain:
     This class will contain the GUI and logic part for the OtherPain page
     """
 
-    def __init__(self):
+    def __init__(self, patient_data: dict, tab_widget: QWidget):
         logger.info("Initializing OtherPain")
-        self.gui: OtherPainGUI = OtherPainGUI()
+         # ! Get patient dictionary from main app
+        self.patient_data: dict[str] = patient_data
+        self.tab_widget: QWidget = tab_widget
+
+        # ! Initialize the GUI and logic
+        self.gui: OtherPainGUI = OtherPainGUI(self)
         self.logic: OtherPainLogic = OtherPainLogic(self, worker_frequency=30)
 
 
@@ -22,8 +27,9 @@ class OtherPainGUI(QWidget):
     This class will contain the GUI part for the OtherPain page
     """
 
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.other_pain: OtherPain = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.setLayout(self.main_layout)
@@ -73,9 +79,16 @@ class OtherPainGUI(QWidget):
 
     def on_no_clicked(self) -> None:
         print("No button clicked")
+        
 
     def on_yes_clicked(self) -> None:
-        print("Yes button clicked")
+        # Get the current pain index from the pain_count
+        pain_index = self.other_pain.patient_data.get("pain_count", 0)
+        # Increment the pain_count for the next pain
+        self.other_pain.patient_data["pain_count"] = pain_index + 1
+
+        # Come back to pain type tab
+        self.other_pain.tab_widget.setCurrentIndex(1)
 
     def __init_footer(self) -> None:
         pass
