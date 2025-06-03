@@ -127,7 +127,7 @@ class MainApp(QMainWindow):
 
         # ! Main layout will only contain a tab widget
         main_layout.addWidget(self.tab_widget)
-        # self.tab_widget.tabBar().hide()  # hide the tab bar
+        self.tab_widget.tabBar().hide()  # hide the tab bar
 
         # ! First tab :Patient Identification
         self.tab_widget.addTab(self.patient_identification.gui, "Patient identification")

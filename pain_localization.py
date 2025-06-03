@@ -11,6 +11,7 @@ from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 from ultralytics import YOLO
 
+import video_source
 from toaster import Toaster
 
 # Set the logger as enqueue
@@ -41,7 +42,7 @@ class PainLocalization:
         self.logic: PainLocalizationLogic = PainLocalizationLogic(
             self,
             worker_frequency=30,
-            video_source="assets/dispositif_quentin_down.mp4",
+            video_source=video_source.video_source,
         )
         self.gui: PainLocalizationGUI = PainLocalizationGUI(parent=self)
 
