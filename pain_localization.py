@@ -11,6 +11,8 @@ import numpy as np
 import threading
 import sys
 
+from atlas import send_pick_request
+
 
 # Set the logger as enqueue
 logger.remove()
@@ -168,8 +170,15 @@ class PainLocalizationGUI(QWidget):
         print("Timer finished.")
         self.timer_button.setText("Lancer un timer")
         self.timer_update_label.stop()
+        self.timer.stop()
 
         # TODO Call the logic to get localization and elements
+        marker_x, marker_y = self.pain_localization.logic.marker_coord
+        # scale the coordinates to the static image (500x500)
+        # marker_x = marker_x * 500 / self.flux_cam_label.width()
+        # marker_y = marker_y * 500 / self.flux_cam_label.height()
+        # send_pick_request(int(marker_x), int(marker_y))
+        
 
 
     def __init_footer(self):

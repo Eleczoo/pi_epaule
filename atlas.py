@@ -1,4 +1,10 @@
-
+import base64
+import json
+import requests
+from io import BytesIO
+from PIL import Image
+import random
+from loguru import logger
 
 
 def send_pick_request(x, y):
