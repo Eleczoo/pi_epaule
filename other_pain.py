@@ -5,17 +5,16 @@ from loguru import logger
 from PyQt6.QtCore import QRunnable, Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
+from toaster import Toaster
+
 
 class OtherPain:
-    """
-    This class will contain the GUI and logic part for the OtherPain page
-    """
-
-    def __init__(self, patient_data: dict, tab_widget: QWidget):
+    def __init__(self, patient_data: dict, tab_widget: QWidget, toaster: Toaster):
         logger.info("Initializing OtherPain")
-         # ! Get patient dictionary from main app
+        # ! Get patient dictionary from main app
         self.patient_data: dict[str] = patient_data
         self.tab_widget: QWidget = tab_widget
+        self.toaster: Toaster = toaster
 
         # ! Initialize the GUI and logic
         self.gui: OtherPainGUI = OtherPainGUI(self)
@@ -79,7 +78,6 @@ class OtherPainGUI(QWidget):
 
     def on_no_clicked(self) -> None:
         print("No button clicked")
-        
 
     def on_yes_clicked(self) -> None:
         # Get the current pain index from the pain_count

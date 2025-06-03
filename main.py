@@ -22,6 +22,7 @@ from pain_localization import PainLocalization
 from pain_type import PainType
 from palpation import Palpation
 from patient_identification import PatientIdentification
+from toaster import Toaster
 
 # ! ---------- Logger ----------
 # Set the logger as enqueue
@@ -61,20 +62,45 @@ class MainApp(QMainWindow):
             800,
             600,
         )
-
         # ! Init dictionary to store all patient data
         self.patient_data: dict[str] = {}
 
         # ! Init tab widget to switch between different tabs with buttons
         self.tab_widget: QWidget = QTabWidget()
 
+        self.toaster = Toaster(self)
+
         # ! Init the different tabs
-        self.patient_identification: PatientIdentification = PatientIdentification(self.patient_data, self.tab_widget)
-        self.pain_type: PainType = PainType(self.patient_data, self.tab_widget)
-        self.pain_localization: PainLocalization = PainLocalization(self.patient_data, self.tab_widget)
-        self.palpation: Palpation = Palpation(self.patient_data, self.tab_widget)
-        self.pain_intensity: PainIntensity = PainIntensity(self.patient_data, self.tab_widget)
-        self.other_pain: OtherPain = OtherPain(self.patient_data, self.tab_widget)
+        self.patient_identification: PatientIdentification = PatientIdentification(
+            self.patient_data,
+            self.tab_widget,
+            self.toaster,
+        )
+        self.pain_type: PainType = PainType(
+            self.patient_data,
+            self.tab_widget,
+            self.toaster,
+        )
+        self.pain_localization: PainLocalization = PainLocalization(
+            self.patient_data,
+            self.tab_widget,
+            self.toaster,
+        )
+        self.palpation: Palpation = Palpation(
+            self.patient_data,
+            self.tab_widget,
+            self.toaster,
+        )
+        self.pain_intensity: PainIntensity = PainIntensity(
+            self.patient_data,
+            self.tab_widget,
+            self.toaster,
+        )
+        self.other_pain: OtherPain = OtherPain(
+            self.patient_data,
+            self.tab_widget,
+            self.toaster,
+        )
 
         # ! Init the worker thread
         self.threadpool = QtCore.QThreadPool()
@@ -100,7 +126,7 @@ class MainApp(QMainWindow):
 
         # ! Main layout will only contain a tab widget
         main_layout.addWidget(self.tab_widget)
-        self.tab_widget.tabBar().hide() # hide the tab bar
+        # self.tab_widget.tabBar().hide()  # hide the tab bar
 
         # ! First tab :Patient Identification
         self.tab_widget.addTab(self.patient_identification.gui, "Patient identification")

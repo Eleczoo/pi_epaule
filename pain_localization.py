@@ -1,18 +1,17 @@
 import multiprocessing as mp
+import sys
+import threading
 from multiprocessing.synchronize import Event as EventClass
 
 import cv2
-from loguru import logger
-from PyQt6.QtCore import QObject, QRunnable, Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
-from ultralytics import YOLO
 import numpy as np
-import threading
-import sys
+from loguru import logger
+from PyQt6.QtCore import QObject, QRunnable, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
+from ultralytics import YOLO
 
-from atlas import send_pick_request
-
+from toaster import Toaster
 
 # Set the logger as enqueue
 logger.remove()
@@ -30,12 +29,13 @@ class PainLocalization:
     This class will contain the GUI and logic part for the PainLocalization
     """
 
-    def __init__(self, patient_data: dict, tab_widget: QWidget):
+    def __init__(self, patient_data: dict, tab_widget: QWidget, toaster: Toaster):
         logger.info("Initializing PainLocalization")
 
         # ! Get patient dictionary from main app
         self.patient_data: dict[str] = patient_data
         self.tab_widget: QWidget = tab_widget
+        self.toaster: Toaster = toaster
 
         # ! Initialize the GUI and logic
         self.logic: PainLocalizationLogic = PainLocalizationLogic(
@@ -57,6 +57,7 @@ class PainLocalizationGUI(QWidget):
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.main_layout.setSpacing(20)
         self.pain_localization: PainLocalization = parent
+        self.captured_frame: QImage = None
 
         self.init_ui()
 
@@ -74,6 +75,14 @@ class PainLocalizationGUI(QWidget):
         super().resizeEvent(a0)
         size = (self.flux_cam_label.width(), self.flux_cam_label.height())
         self.pain_localization.logic.set_size_capture(size)
+        if self.captured_frame is not None:
+            # Rescale the captured image to the new size
+            scaled_img = self.captured_frame.scaled(
+                size[0],
+                size[1],
+                Qt.AspectRatioMode.KeepAspectRatio,
+            )
+            self.captured_image.setPixmap(QPixmap.fromImage(scaled_img))
 
     def __init_header(self):
         header_label = QLabel("Pain Localization", self)
@@ -100,12 +109,16 @@ class PainLocalizationGUI(QWidget):
 
         self.pain_localization.logic.signals.change_pixmap_signal.connect(self.update_image)
 
-        # 3D avatar placeholder
-        self.avatar_placeholder = QFrame(self)
-        self.avatar_placeholder.setStyleSheet("background-color: #888; border-radius: 5px;")
+        # Captured image placeholder
+        # self.captured_image = QFrame(self)
+        # self.captured_image.setStyleSheet("background-color: #888; border-radius: 5px;")
+        self.captured_image = QLabel("Captured Image", self)
+        self.captured_image.setStyleSheet("border-radius: 5px; color: white; font-weight: normal;")
+        self.captured_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.captured_image.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
         content_layout.addWidget(self.flux_cam_label)
-        content_layout.addWidget(self.avatar_placeholder)
+        content_layout.addWidget(self.captured_image)
 
         # Buttons layout
         buttons_layout = QHBoxLayout()
@@ -124,14 +137,13 @@ class PainLocalizationGUI(QWidget):
 
         self.main_layout.addLayout(content_layout, stretch=1)
         self.main_layout.addLayout(buttons_layout)
-        
+
         # Timer Setup
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer_timeout)
 
         self.timer_update_label = QTimer(self)
         self.timer_update_label.timeout.connect(self.set_current_timer_label)
-
 
     def update_image(self, image: QImage):
         """
@@ -149,9 +161,9 @@ class PainLocalizationGUI(QWidget):
         self.pain_localization.patient_data[f"elements_{pain_index}"] = elements
 
         if self.pain_localization.patient_data[f"pain_type_{pain_index}"] == "Continuous Pain":
-            self.pain_localization.tab_widget.setCurrentIndex(4) # Switch to the next tab (Pain Intensity)
+            self.pain_localization.tab_widget.setCurrentIndex(4)  # Switch to the next tab (Pain Intensity)
         else:
-            self.pain_localization.tab_widget.setCurrentIndex(3) # Switch to the next tab (Palpation)
+            self.pain_localization.tab_widget.setCurrentIndex(3)  # Switch to the next tab (Palpation)
 
     def timer_clicked(self):
         self.timer.start(5000)
@@ -178,8 +190,37 @@ class PainLocalizationGUI(QWidget):
         # marker_x = marker_x * 500 / self.flux_cam_label.width()
         # marker_y = marker_y * 500 / self.flux_cam_label.height()
         # send_pick_request(int(marker_x), int(marker_y))
-        
 
+        # ! Show the captured image
+        captured_image = self.pain_localization.logic.frame.copy()
+        if captured_image is not None:
+            left_shoulder, right_shoulder = self.pain_localization.logic.detect_shoulders(captured_image)
+            if left_shoulder is not None and right_shoulder is not None:
+                self.left_shoulder_coord = tuple(left_shoulder)
+                self.right_shoulder_coord = tuple(right_shoulder)
+                # Draw shoulders on the captured image
+                cv2.circle(captured_image, self.left_shoulder_coord, 15, (0, 0, 255), -1)  # Draw left shoulder
+                cv2.circle(captured_image, self.right_shoulder_coord, 15, (0, 0, 255), -1)  # Draw right shoulder
+
+            # Detect marker
+            marker_coord = self.pain_localization.logic.detect_marker(captured_image, left_shoulder, right_shoulder)
+            if marker_coord is not None:
+                self.marker_coord = tuple(marker_coord)
+                # Draw marker on the captured image
+                cv2.circle(captured_image, self.marker_coord, 10, (255, 0, 0), -1)  # Draw marker
+
+            # Rescale and Convert the drawned image to QImage
+            height, width, channel = captured_image.shape
+            bytes_per_line = channel * width
+            frame = cv2.cvtColor(captured_image, cv2.COLOR_BGR2RGB)
+            self.captured_frame = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
+            scaled_img = self.captured_frame.scaled(
+                self.pain_localization.logic.size_capture[0],
+                self.pain_localization.logic.size_capture[1],
+                Qt.AspectRatioMode.KeepAspectRatio,
+            )
+
+            self.captured_image.setPixmap(QPixmap.fromImage(scaled_img))
 
     def __init_footer(self):
         pass
@@ -263,7 +304,7 @@ class PainLocalizationLogic(QRunnable):
 
             self.signals.change_pixmap_signal.emit(scaled_img)
 
-    def detect_shoulders(self, raw_frame: cv2.Mat) -> tuple[cv2.Mat, np.ndarray, np.ndarray]:
+    def detect_shoulders(self, raw_frame: cv2.Mat) -> tuple[np.ndarray, np.ndarray]:
         """
         This will take the raw frame from the camera and detect the shoulders
         with yolo model,
@@ -351,7 +392,7 @@ class PainLocalizationLogic(QRunnable):
                         # print(x_on_static_img, y_on_static_img)
                         # cv2.circle(raw_frame, (int(median_x), int(median_y)), 10, (255, 0, 0), -1)
             else:
-                logger.warning("No masks or boxes found in the segmentation results.")
+                # logger.warning("No masks or boxes found in the segmentation results.")
                 return None
 
         if last_device_location is not None:
@@ -372,7 +413,7 @@ class PainLocalizationLogic(QRunnable):
                 if self.frame is not None:
                     copy_frame = self.frame.copy()
 
-                    logger.debug(f"Processing frame shape {copy_frame.shape} at frame count {self.count_frames}")
+                    # logger.debug(f"Processing frame shape {copy_frame.shape} at frame count {self.count_frames}")
 
                     # Detect shoulders
                     left_shoulder, right_shoulder = self.detect_shoulders(copy_frame)
@@ -390,3 +431,4 @@ class PainLocalizationLogic(QRunnable):
     def stop(self):
         self.stopped.set()
         self.cap.release()
+        # self.captured_image = QLabel("Captured Image", self)

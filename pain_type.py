@@ -6,17 +6,20 @@ from loguru import logger
 from PyQt6.QtCore import QRunnable, Qt
 from PyQt6.QtWidgets import QApplication, QButtonGroup, QHBoxLayout, QLabel, QPushButton, QRadioButton, QVBoxLayout, QWidget
 
+from toaster import Toaster
+
 
 class PainType:
     """
     This class will contain the GUI and logic part for the Pain Type Selector
     """
 
-    def __init__(self, patient_data: dict, tab_widget: QWidget):
+    def __init__(self, patient_data: dict, tab_widget: QWidget, toaster: Toaster):
         logger.info("Initializing PainType")
-         # ! Get patient dictionary from main app
+        # ! Get patient dictionary from main app
         self.patient_data: dict[str] = patient_data
         self.tab_widget: QWidget = tab_widget
+        self.toaster: Toaster = toaster
 
         # ! Initialize the GUI and logic
         self.gui: PainTypeGUI = PainTypeGUI(self)
@@ -125,6 +128,7 @@ class PainTypeGUI(QWidget):
 
         # Switch to the next tab (Pain Localization)
         self.pain_type.tab_widget.setCurrentIndex(2)
+
 
 class PainTypeLogic(QRunnable):
     """

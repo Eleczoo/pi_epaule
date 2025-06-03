@@ -5,17 +5,20 @@ from loguru import logger
 from PyQt6.QtCore import QRunnable, Qt
 from PyQt6.QtWidgets import QFormLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
 
+from toaster import Toaster
+
 
 class PatientIdentification:
     """
     This class will contain the GUI and logic part for the PatientIdentification
     """
 
-    def __init__(self, patient_data: dict, tab_widget: QWidget):
+    def __init__(self, patient_data: dict, tab_widget: QWidget, toaster: Toaster):
         logger.info("Initializing PatientIdentification")
         # ! Get patient dictionary from main app
         self.patient_data: dict[str] = patient_data
         self.tab_widget: QWidget = tab_widget
+        self.toaster: Toaster = toaster
 
         # ! Initialize the GUI and logic
         self.gui: PatientIdentificationGUI = PatientIdentificationGUI(self)
@@ -72,7 +75,7 @@ class PatientIdentificationGUI(QWidget):
         self.birthday_input.setPlaceholderText("DD/MM/YYYY")
         self.birthday_input.setMaxLength(10)
         self.birthday_input.setInputMask("99/99/9999")
-        self.birthday_input.setText("01/01/2000")
+        self.birthday_input.setText("01/01/1900")
         form_layout.addRow("Date of birth", self.birthday_input)
 
         center_layout.addLayout(form_layout, stretch=1)
@@ -92,8 +95,41 @@ class PatientIdentificationGUI(QWidget):
         self.parent.patient_data["lastname"] = self.name_input.text()
         self.parent.patient_data["firstname"] = self.firstname_input.text()
         self.parent.patient_data["birthday"] = self.birthday_input.text()
-        
-        self.parent.tab_widget.setCurrentIndex(1) # Switch to the next tab (Pain Type)
+
+        # Check if fields are filled
+        if not self.parent.patient_data["lastname"]:
+            self.parent.toaster.show_warning("Last name not filled.")
+            return
+
+        if not self.parent.patient_data["firstname"]:
+            self.parent.toaster.show_warning("First name not filled.")
+            return
+
+        # Check if birthday is filled and in the correct format
+        # And not the default value
+        if (
+            not self.parent.patient_data["birthday"]
+            or len(self.parent.patient_data["birthday"]) != 10
+            or self.parent.patient_data["birthday"] == "01/01/1900"
+        ):
+            self.parent.toaster.show_warning("Birthday not filled correctly.")
+            return
+
+        #  Check if birthday does not make us older than 120 years or younger than 3 years
+        from datetime import datetime, timedelta
+
+        today = datetime.now()
+        try:
+            birthday = datetime.strptime(self.parent.patient_data["birthday"], "%d/%m/%Y")
+            age = today - birthday
+            if age < timedelta(days=3 * 365) or age > timedelta(days=120 * 365):
+                self.parent.toaster.show_warning("Birthday not valid, must be between 3 and 120 years old.")
+                return
+        except ValueError:
+            self.parent.toaster.show_warning("Birthday not filled correctly, must be in the format DD/MM/YYYY.")
+            return
+
+        self.parent.tab_widget.setCurrentIndex(1)  # Switch to the next tab (Pain Type)
 
     def __init_footer(self) -> None:
         pass

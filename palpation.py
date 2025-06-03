@@ -5,17 +5,21 @@ from loguru import logger
 from PyQt6.QtCore import QRunnable, Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
+from toaster import Toaster
+
 
 class Palpation:
     """
     This class will contain the GUI and logic part for the Palpation page
     """
 
-    def __init__(self, patient_data: dict, tab_widget: QWidget):
+    def __init__(self, patient_data: dict, tab_widget: QWidget, toaster: Toaster):
         logger.info("Initializing Palpation")
         # ! Get patient dictionary from main app
         self.patient_data: dict[str] = patient_data
         self.tab_widget: QWidget = tab_widget
+
+        self.toaster: Toaster = toaster
 
         # ! Initialize the GUI and logic
         self.gui: PalpationGUI = PalpationGUI(self)

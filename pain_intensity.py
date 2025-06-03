@@ -9,17 +9,20 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from toaster import Toaster
+
 
 class PainIntensity:
     """
     This class will contain the GUI and logic part for the PainIntensity
     """
 
-    def __init__(self, patient_data: dict, tab_widget: QWidget):
+    def __init__(self, patient_data: dict, tab_widget: QWidget, toaster: Toaster):
         logger.info("Initializing PainIntensity")
         # ! Get patient dictionary from main app
         self.patient_data: dict[str] = patient_data
         self.tab_widget: QWidget = tab_widget
+        self.toaster: Toaster = toaster
 
         # ! Initialize the GUI and logic
         self.gui: PainIntensityGUI = PainIntensityGUI(self)
@@ -156,12 +159,11 @@ class PainIntensityGUI(QWidget):
         if index == 4:
             # Get the current pain index from the pain_count
             pain_index = self.pain_intensity.patient_data.get("pain_count", 0)
-            
+
             if self.pain_intensity.patient_data[f"pain_type_{pain_index}"] == "Continuous Pain":
                 self.set_second_slider_visible(False)
             else:
                 self.set_second_slider_visible(True)
-
 
     def on_ok_clicked(self):
         # Get the current pain index from the pain_count
@@ -169,7 +171,7 @@ class PainIntensityGUI(QWidget):
 
         self.pain_intensity.patient_data[f"pain_intensity_{pain_index}"] = {
             "intensity1": self.intensity_slider.value(),
-            "intensity2": self.intensity_slider2.value()
+            "intensity2": self.intensity_slider2.value(),
         }
         self.pain_intensity.tab_widget.setCurrentIndex(5)  # Switch to the next tab (Other tab)
 
