@@ -80,20 +80,25 @@ def send_pick_request(x, y):
     logger.debug(json.dumps(result, indent=2))
     result = pick_response.json()
     part_names = list({pin["PinPartName"] for pin in result.get("Pin", [])})
-
+    '''
     image_url = "http://lifesciencedb.jp/bp3d/API/image"
     image_payload = {
         "Part": [{"PartName": "anatomical entity", "PartColor": "F0D2A0", "PartOpacity": 0.1}],
         "Window": {"ImageWidth": 500, "ImageHeight": 500},
     }
+    '''
+    to_return =[]
     for name in part_names:
+        '''
         image_payload["Part"].append(
             {"PartName": name, "PartColor": "".join([random.choice("0123456789ABCDEF") for _ in range(6)]), "PartOpacity": 0.7}
         )
-
+        '''
+        to_return.append(name)
+    '''
     print("image response ")
     print("URL:", image_url)
-    print("📤 Pick Request Payload:", json.dumps(image_payload, separators=(",", ":")))
+    print("📤 Pick response Payload:", json.dumps(image_payload, separators=(",", ":")))
     image_response = requests.post(image_url, data=json.dumps(image_payload), headers={"Content-Type": "application/json"})
 
     logger.debug("Image response status code:", image_response.status_code)
@@ -113,3 +118,5 @@ def send_pick_request(x, y):
             logger.error("Error extracting image from response:", e)
     else:
         logger.error("Image request failed with status:", image_response.status_code)
+    '''
+    return to_return

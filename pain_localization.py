@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBox
 from ultralytics import YOLO
 
 import video_source
+from atlas import send_pick_request
 from toaster import Toaster
 
 # Set the logger as enqueue
@@ -37,7 +38,7 @@ class PainLocalization:
         self.patient_data: dict[str] = patient_data
         self.tab_widget: QWidget = tab_widget
         self.toaster: Toaster = toaster
-
+        self.structures = None
         # ! Initialize the GUI and logic
         self.logic: PainLocalizationLogic = PainLocalizationLogic(
             self,
@@ -160,7 +161,7 @@ class PainLocalizationGUI(QWidget):
 
         # TODO : Save the localization, elements and captured image in the patient_data dictionary
         self.pain_localization.patient_data[f"saved_img_{pain_index}"] = self.saved_image.copy()  # Save the captured image
-
+        self.pain_localization.patient_data[f"structures_{pain_index}"]=self.structures
         # ! Clear captured image
         self.captured_image.clear()
         self.captured_frame = None
@@ -197,12 +198,6 @@ class PainLocalizationGUI(QWidget):
         self.timer_update_label.stop()
         self.timer.stop()
 
-        # TODO Call the logic to get localization and elements
-        marker_x, marker_y = self.pain_localization.logic.marker_coord
-        # scale the coordinates to the static image (500x500)
-        # marker_x = marker_x * 500 / self.flux_cam_label.width()
-        # marker_y = marker_y * 500 / self.flux_cam_label.height()
-        # send_pick_request(int(marker_x), int(marker_y))
 
         # ! Show the captured image
         captured_image = self.pain_localization.logic.frame.copy()
@@ -229,6 +224,18 @@ class PainLocalizationGUI(QWidget):
                 self.pain_localization.toaster.show_warning("Dispositif non détecté, veuillez réessayer.")
                 return
 
+
+            # call tool
+            avg_shoulder_y = (self.left_shoulder_coord[1] + self.right_shoulder_coord[1]) / 2
+            device_x,device_y = self.marker_coord
+            y_on_static_img = int(100 + (device_y - avg_shoulder_y))
+            min_x = min(self.left_shoulder_coord[0], self.right_shoulder_coord[0])
+            max_x = max(self.left_shoulder_coord[0], self.right_shoulder_coord[0])
+            percent = ((device_x - min_x) / (max_x - min_x + 1e-6)) * 100
+            static_x_start = 100
+            static_x_end = 377
+            x_on_static_img = int(static_x_start + (percent / 100) * (static_x_end - static_x_start))
+            self.structures =send_pick_request(x_on_static_img,y_on_static_img)
             # Rescale and Convert the drawned image to QImage
             height, width, channel = captured_image.shape
             bytes_per_line = channel * width
@@ -407,17 +414,6 @@ class PainLocalizationLogic(QRunnable):
                         median_y = int(median_y * frame_h / mask_h)
 
                         last_device_location = (median_x, median_y)
-                        # device_x, device_y = last_device_location
-                        # avg_shoulder_y = (left_shoulder[1] + right_shoulder[1]) / 2
-                        # y_on_static_img = int(100 + (device_y - avg_shoulder_y))
-                        # min_x = min(left_shoulder[0], right_shoulder[0])
-                        # max_x = max(left_shoulder[0], right_shoulder[0])
-                        # percent = ((device_x - min_x) / (max_x - min_x + 1e-6)) * 100
-                        # static_x_start = 100
-                        # static_x_end = 377
-                        # x_on_static_img = int(static_x_start + (percent / 100) * (static_x_end - static_x_start))
-                        # print(x_on_static_img, y_on_static_img)
-                        # cv2.circle(raw_frame, (int(median_x), int(median_y)), 10, (255, 0, 0), -1)
             else:
                 # logger.warning("No masks or boxes found in the segmentation results.")
                 return None
