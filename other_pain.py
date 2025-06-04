@@ -143,9 +143,12 @@ class OtherPainGUI(QWidget):
             )
 
             # TODO : Format the structures to be more readable
-            report_creator.add_paragraph(
-                f"Structures à la localisation de la douleur: {self.other_pain.patient_data.get(f'structures_{i}', 'Non spécifié')}\r"
-            )
+            structures = self.other_pain.patient_data.get(f"structures_{i}", [])
+            report_creator.add_paragraph("Structures à la localisation de la douleur")
+            if structures and isinstance(structures, list):
+                report_creator.add_list(structures)
+            else:
+                report_creator.add_paragraph("Non spécifié\r")
 
         logger.info("Starting to compile the report...")
         report_creator.compile_report()

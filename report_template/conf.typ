@@ -17,7 +17,7 @@
 
 	// ? Latex look
 	set page(margin: 2.5cm) 				// ! GLOBAL MARGIN 
-	set par(leading: 0.5mm, justify: true)  // ! INTERLINE
+	set par(leading: 1.5mm, justify: true)  // ! INTERLINE
 	set text(font: "New Computer Modern")	 
 	show raw: set text(font: "New Computer Modern Mono")
 	set par(spacing: 1cm)

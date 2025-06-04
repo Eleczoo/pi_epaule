@@ -64,7 +64,7 @@ class PalpationGUI(QWidget):
         content_layout = QVBoxLayout()
         content_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
-        self.central_text = QLabel("Effectuez la palpation du patient", self)
+        self.central_text = QLabel("Effectuez la palpation à l'aide du dispositif", self)
         self.central_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.central_text.setStyleSheet(
             "font-size: 20pt; font-weight: bold; color: #333; border: 1px solid #ccc; background: #f9f9f9;"
@@ -76,22 +76,14 @@ class PalpationGUI(QWidget):
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(20)
 
-        self.skip_button = QPushButton("(Trop douloureux / Pas accessible) Passer à la suite ", self)
-        self.skip_button.setStyleSheet("background-color: orange; color: white; font-size: 14pt;")
-        self.skip_button.clicked.connect(self.on_skip_clicked)
-
         self.ok_button = QPushButton("OK", self)
         self.ok_button.setStyleSheet("background-color: green; color: white; font-size: 14pt;")
         self.ok_button.clicked.connect(self.on_ok_clicked)
 
-        buttons_layout.addWidget(self.skip_button)
         buttons_layout.addWidget(self.ok_button)
 
         self.main_layout.addLayout(content_layout, stretch=1)
         self.main_layout.addLayout(buttons_layout)
-
-    def on_skip_clicked(self) -> None:
-        print("Skip button clicked")
 
     def on_ok_clicked(self) -> None:
         # Get the current pain index from the pain_count

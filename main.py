@@ -156,7 +156,7 @@ class MainApp(QMainWindow):
         self.show()
 
     def closeEvent(self, a0):
-        print(self.patient_data)
+        # print(self.patient_data)
         print("Closing app")
         self.pain_localization.logic.stop()
         self.threadpool.clear()

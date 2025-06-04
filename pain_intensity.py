@@ -160,13 +160,9 @@ class PainIntensityGUI(QWidget):
             # Get the current pain index from the pain_count
             pain_index = self.pain_intensity.patient_data.get("pain_count", 0)
 
-            logger.debug(f"pain_type_{pain_index}: {self.pain_intensity.patient_data[f'pain_type_{pain_index}']}")
-
             if self.pain_intensity.patient_data[f"pain_type_{pain_index}"] == "Douleur Continue":
-                logger.debug("Setting second slider to invisible")
                 self.set_second_slider_visible(False)
             else:
-                logger.debug("Setting second slider to visible")
                 self.set_second_slider_visible(True)
 
     def on_ok_clicked(self):
